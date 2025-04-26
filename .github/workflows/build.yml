@@ -28,7 +28,7 @@ jobs:
     
         - name: Build APK
           run: |
-            python -m flet build apk
+            poetry run flet build apk
 
         - name: Upload APK
           uses: actions/upload-artifact@v4
