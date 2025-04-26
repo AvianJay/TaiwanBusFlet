@@ -33,7 +33,7 @@ jobs:
         - name: Upload APK
           uses: actions/upload-artifact@v4
           with:
-            name: taiwanbusflet-android.apk
+            name: taiwanbusflet-android
             path: build/apk
 
         - name: Build IPA
@@ -43,5 +43,5 @@ jobs:
         - name: Upload IPA
           uses: actions/upload-artifact@v4
           with:
-            name: taiwanbusflet-ios.ipa
+            name: taiwanbusflet-ios
             path: build/ipa
