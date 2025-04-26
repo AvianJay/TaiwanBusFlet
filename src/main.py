@@ -59,7 +59,7 @@ def main(page: ft.Page):
             print("Bus info updated")
 
     def search_select(e):
-        config.current_bus = e.selection.value
+        config.current_bus = e.selection.value.split("/")[1]
         print("Selected bus:", config.current_bus)
         page.go("/viewbus")
 
@@ -70,7 +70,7 @@ def main(page: ft.Page):
             suggestions = []
             routes = asyncio.run(taiwanbus.fetch_routes_by_name(""))
             for route in routes:
-                suggestions.append(ft.AutoCompleteSuggestion(key=route["route_name"], value=route["route_key"]),)
+                suggestions.append(ft.AutoCompleteSuggestion(key=f"{route['provider']}-{route['route_name']}/{route['route_key']}", value=f"{route['provider']}-{route['route_name']}/{route['route_key']}"),)
             page.views.append(
                 ft.View(
                     "/search",
@@ -109,9 +109,9 @@ def main(page: ft.Page):
     def home_show_page(index):
         home_view.controls.clear()  # 清空頁面內容
         if index == 0:
-            home_view.controls.append(ft.Text("這是主頁"))
-            btn = create_button(ft.Icons.HOME, "TEST", lambda e: None)
-            home_view.controls.append(btn)
+            home_view.controls.append(ft.Text("這是主頁 哈哈"))
+            # btn = create_button(ft.Icons.HOME, "TEST", lambda e: None)
+            # home_view.controls.append(btn)
             home_view.controls.append(
                 ft.TextButton(
                     content=ft.Container(
@@ -130,7 +130,7 @@ def main(page: ft.Page):
                 ),
             )
         elif index == 1:
-            home_view.controls.append(ft.Text("這是自動化頁面"))
+            home_view.controls.append(ft.Text("這是自動化頁面 WIP"))
         page.update()
 
     # 設定 NavigationBar 並處理切換事件
