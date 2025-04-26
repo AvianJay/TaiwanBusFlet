@@ -1,0 +1,37 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+    build:
+        runs-on: macos-latest
+    
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+    
+        - name: Set up Python 3.x
+          uses: actions/setup-python@v2
+          with:
+            python-version: '3.x'
+    
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install poetry
+            poetry install
+    
+        - name: Build APK
+          run: |
+            flet build apk
+
+        - name: Upload APK
+          uses: actions/upload-artifact@v4
+          with:
+            name: taiwanbusflet-android.apk
+            path: build/app-release.apk
