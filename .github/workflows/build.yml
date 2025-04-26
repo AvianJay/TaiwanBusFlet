@@ -34,4 +34,14 @@ jobs:
           uses: actions/upload-artifact@v4
           with:
             name: taiwanbusflet-android.apk
-            path: build/app-release.apk
+            path: build/apk
+
+        - name: Build IPA
+          run: |
+            poetry run flet build ipa
+
+        - name: Upload IPA
+          uses: actions/upload-artifact@v4
+          with:
+            name: taiwanbusflet-ios.ipa
+            path: build/ipa
