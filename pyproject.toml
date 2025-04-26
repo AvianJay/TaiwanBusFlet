@@ -9,7 +9,7 @@ authors = [
 ]
 dependencies = [
   "flet==0.27.6",
-  "taiwanbus==0.0.8"
+  "taiwanbus==0.0.9"
 ]
 
 [tool.flet]
