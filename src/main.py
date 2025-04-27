@@ -3,6 +3,7 @@ import taiwanbus
 import asyncio
 import config
 import time
+import threading
 
 def main(page: ft.Page):
     page.title = "TaiwanBus"
@@ -85,7 +86,7 @@ def main(page: ft.Page):
             )
         if page.route == "/viewbus":
             page.views.append(bus_view)
-            bus_start_update()
+            threading.Thread(target=bus_start_update, daemon=True).start()
         page.update()
 
     def create_button(icon, text, on_click):
@@ -146,6 +147,18 @@ def main(page: ft.Page):
     )
     page.update()
 
+    
+    def view_pop(e):
+        print("View pop:", e.view)
+        page.views.pop()
+        top_view = page.views[-1]
+        page.go(top_view.route)
+
+    page.on_route_change = route_change
+    page.on_view_pop = view_pop
+    page.go(page.route)
+    home_show_page(0)
+
     def on_update_click(e):
         print("Clicked update button")
         page.close(upddlg)
@@ -186,17 +199,6 @@ def main(page: ft.Page):
         )
         page.open(upddlg)
         page.update()
-
-    def view_pop(e):
-        print("View pop:", e.view)
-        page.views.pop()
-        top_view = page.views[-1]
-        page.go(top_view.route)
-
-    page.on_route_change = route_change
-    page.on_view_pop = view_pop
-    page.go(page.route)
-    home_show_page(0)
 
 
 ft.app(main)
