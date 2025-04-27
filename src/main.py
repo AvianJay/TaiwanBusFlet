@@ -13,6 +13,9 @@ def main(page: ft.Page):
     home_view.appbar = ft.AppBar(
         title=ft.Text("TaiwanBus"),
         bgcolor=ft.colors.SURFACE_VARIANT,
+        actions=[
+            ft.IconButton(ft.icons.SETTINGS, on_click=lambda e: page.go("/settings")),
+        ],
     )
 
     bus_view = ft.View("/viewbus")
@@ -87,6 +90,19 @@ def main(page: ft.Page):
         if page.route == "/viewbus":
             page.views.append(bus_view)
             threading.Thread(target=bus_start_update, daemon=True).start()
+        if page.route == "/settings":
+            page.views.append(
+                ft.View(
+                    "/settings",
+                    [
+                        ft.AppBar(leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        ft.Column([
+                            ft.Text("這是設定頁面 WIP"),
+                            create_button(ft.Icons.SETTINGS, "測試", lambda e: None),
+                        ]),
+                    ],
+                )
+            )
         page.update()
 
     def create_button(icon, text, on_click):
