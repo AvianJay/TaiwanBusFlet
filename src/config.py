@@ -3,6 +3,7 @@ import taiwanbus
 
 # some global variables
 current_bus = None
+bus_update_time = 10  # seconds
 
 platform = os.getenv("FLET_PLATFORM")
 datadir = os.getenv("FLET_APP_STORAGE_DATA")

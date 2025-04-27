@@ -14,11 +14,26 @@ def main(page: ft.Page):
         title=ft.Text("TaiwanBus"),
         bgcolor=ft.colors.SURFACE_VARIANT,
         actions=[
-            ft.IconButton(ft.icons.SETTINGS, on_click=lambda e: page.go("/settings")),
+            ft.IconButton(ft.Icons.SETTINGS, on_click=lambda e: page.go("/settings")),
         ],
     )
 
     bus_view = ft.View("/viewbus")
+    bus_view.appbar = ft.AppBar(
+        leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")),
+        title=ft.Text("公車資訊"),
+        bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+    )
+    bus_timer_pb = ft.ProgressBar()
+    bus_timer_text = ft.Text("0 秒前更新")
+    bus_view.bottom_appbar = ft.BottomAppBar(
+        bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+        content=ft.Column([
+            bus_timer_pb,
+            bus_timer_text,
+        ]),
+    )
+    # bus_view.scroll = ft.ScrollMode.AUTO
 
     def bus_start_update():
         while page.route == "/viewbus":
@@ -59,7 +74,14 @@ def main(page: ft.Page):
                 )
             )
             page.update()
-            time.sleep(10)  # Simulate a delay for the bus update
+            timer = config.bus_update_time
+            for i in range(timer + 1):
+                bus_timer_pb.value = i / timer
+                bus_timer_text.value = f"{timer - i} 秒前更新"
+                page.update()
+                time.sleep(1)
+            bus_timer_pb.value = None
+            # time.sleep(10)  # Simulate a delay for the bus update
             print("Bus info updated")
 
     def search_select(e):
