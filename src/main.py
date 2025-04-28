@@ -154,18 +154,22 @@ def main(page: ft.Page):
             home_view.controls.append(
                 ft.TextButton(
                     content=ft.Container(
-                        content=ft.Column(
-                            [
-                                ft.Text(value="查詢公車", size=20),
-                                ft.Text(value="找到你的公車"),
-                            ],
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            spacing=5,
-                        ),
+                        content=ft.Row([
+                                ft.Icon(name=ft.Icons.SEARCH),
+                                ft.Column(
+                                    [
+                                        ft.Text(value="查詢公車", size=20),
+                                        ft.Text(value="找到你的公車"),
+                                    ],
+                                     alignment=ft.MainAxisAlignment.CENTER,
+                                    spacing=5,
+                                ),
+                            ]),
                         padding=10,
                         on_click=lambda e: page.go("/search"),
                         alignment=ft.alignment.center,
                     ),
+                    style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),
                 ),
             )
         elif index == 1:
