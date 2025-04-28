@@ -28,7 +28,7 @@ jobs:
     
         - name: Build APK
           run: |
-            poetry run flet build apk
+            poetry run flet build apk --verbose
 
         - name: Upload APK
           uses: actions/upload-artifact@v4
@@ -38,7 +38,7 @@ jobs:
 
         - name: Build IPA
           run: |
-            poetry run flet build ipa
+            poetry run flet build ipa --verbose
 
         - name: Upload IPA
           uses: actions/upload-artifact@v4
