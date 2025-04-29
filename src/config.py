@@ -2,12 +2,15 @@ import os
 import json
 import taiwanbus
 import flet as ft
-from importlib.metadata import version
+# from importlib.metadata import version
 
 # info
 app_version = "0.0.1"
 config_version = 1
-taiwanbus_version = version("taiwanbus")
+# taiwanbus_version = version("taiwanbus")
+# No package metadata when complied
+# taiwanbus.__version__ will add in 0.1.0
+taiwanbus_version = "0.0.9"
 
 # some global variables
 current_bus = None
