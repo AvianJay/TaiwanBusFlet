@@ -56,12 +56,14 @@ def main(page: ft.Page):
         tabs = []
         for path_id, path_data in bus_info.items():
             timetexts[path_id] = [
-                ft.Row(
-                    [
-                        ft.Text(stop["sec"]),
-                        ft.Text(stop["stop_name"]),
-                    ]
-                ) for stop in path_data["stops"]
+                ft.TextButton(
+                    content=ft.Row(
+                        [
+                            ft.Text(stop["sec"]),
+                            ft.Text(stop["stop_name"]),
+                        ]
+                    )
+                 ) for stop in path_data["stops"]
             ]
             tab = ft.Tab(
                 text=path_data["name"],
@@ -86,8 +88,8 @@ def main(page: ft.Page):
             bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
             for path_id, path_data in timetexts.items():
                 for i, path in enumerate(path_data):
-                    path.controls[0].value = bus_info[path_id]["stops"][i]["sec"]
-                    path.controls[1].value = bus_info[path_id]["stops"][i]["stop_name"]
+                    path.content.controls[0].value = bus_info[path_id]["stops"][i]["sec"]
+                    path.content.controls[1].value = bus_info[path_id]["stops"][i]["stop_name"]
             page.update()
             timer = int(config.config("bus_update_time"))
             for i in range(timer + 1):
