@@ -25,7 +25,7 @@ def main(page: ft.Page):
         bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
     )
     bus_timer_pb = ft.ProgressBar()
-    bus_timer_text = ft.Text("0 秒前更新")
+    bus_timer_text = ft.Text("正在更新")
     bus_view.bottom_appbar = ft.BottomAppBar(
         bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
         content=ft.Column([
@@ -36,37 +36,45 @@ def main(page: ft.Page):
     #bus_view.scroll = ft.ScrollMode.AUTO
 
     def bus_start_update():
-        while page.route == "/viewbus":
-            if not config.current_bus:
-                page.go("/")
-                snackbar = ft.SnackBar(
-                    content=ft.Text("沒有選擇的公車！"),
-                    action="確定",
-                )
-                page.open(snackbar)
-                break
-            bus_view.controls.clear()
-            route_info = asyncio.run(taiwanbus.fetch_route(config.current_bus))[0]
-            bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
-            bus_view.appbar = ft.AppBar(
-                leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")),
-                title=ft.Text(route_info["route_name"]),
-                bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+        if not config.current_bus:
+            page.go("/")
+            snackbar = ft.SnackBar(
+                content=ft.Text("沒有選擇的公車！"),
+                action="確定",
             )
-            tabs = []
-            for path_id, path_data in bus_info.items():
-                tab = ft.Tab(
-                    text=path_data["name"],
-                    content=ft.Column(
-                        [
-                            ft.Text(f"{stop["stop_name"]} {stop["sec"]}") for stop in path_data["stops"]
-                        ],
-                        alignment=ft.MainAxisAlignment.START,
-                        scroll = ft.ScrollMode.AUTO,
-                    ),
+            page.open(snackbar)
+            return
+        bus_view.controls.clear()
+        route_info = asyncio.run(taiwanbus.fetch_route(config.current_bus))[0]
+        bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+        bus_view.appbar = ft.AppBar(
+            leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")),
+            title=ft.Text(route_info["route_name"]),
+            bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+        )
+        timetexts = {}
+        tabs = []
+        for path_id, path_data in bus_info.items():
+            timetexts[path_id] = [
+                ft.Row(
+                    [
+                        ft.Text(stop["sec"]),
+                        ft.Text(stop["stop_name"]),
+                    ]
+                ) for stop in path_data["stops"]
+            ]
+            tab = ft.Tab(
+                text=path_data["name"],
+                content=ft.Column(
+                    [
+                        row for row in timetexts[path_id]
+                    ],
+                    alignment=ft.MainAxisAlignment.START,
+                    scroll = ft.ScrollMode.AUTO,
                 )
-                tabs.append(tab)
-            bus_view.controls.append(
+            )
+            tabs.append(tab)
+        bus_view.controls.append(
                 ft.Tabs(
                     selected_index=1,
                     animation_duration=300,
@@ -74,8 +82,14 @@ def main(page: ft.Page):
                     expand=1,
                 )
             )
+        while page.route == "/viewbus":
+            bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+            for path_id, path_data in timetexts.items():
+                for i, path in enumerate(path_data):
+                    path.controls[0].value = bus_info[path_id]["stops"][i]["sec"]
+                    path.controls[1].value = bus_info[path_id]["stops"][i]["stop_name"]
             page.update()
-            timer = config.config("bus_update_time")
+            timer = int(config.config("bus_update_time"))
             for i in range(timer + 1):
                 time.sleep(1)
                 bus_timer_pb.value = i / timer
@@ -123,6 +137,29 @@ def main(page: ft.Page):
                             ft.Text("這是設定頁面 WIP 哈哈"),
                             create_button(ft.Icons.SETTINGS, "測試", lambda e: None),
                             # dropdown
+                            ft.Dropdown(
+                                label="選擇資料庫",
+                                options=[
+                                    ft.DropdownOption(key="twn", content=ft.Text("台灣")),
+                                    ft.DropdownOption(key="tcc", content=ft.Text("台中")),
+                                    ft.DropdownOption(key="tpe", content=ft.Text("台北")),
+                                ],
+                                on_change=lambda e: config.config("provider", e.control.value, "w"),
+                                value=config.config("provider"),
+                            ),
+                            # hint
+                            ft.Text("台灣: 有全台灣的公車資料，但是沒有站點資料，取得公車資訊時消耗較多流量\n" \
+                                "台中, 台北: 僅有台中和台北的公車資料，並且有站點資料，取得公車資訊時需要較少流量"
+                                , size=10, color=ft.Colors.GREY_500),
+                            # bus update time
+                            ft.Text("公車更新頻率"),
+                            ft.Slider(
+                                min=1,
+                                max=60,
+                                label="{value} 秒",
+                                value=config.config("bus_update_time"),
+                                on_change=lambda e: config.config("bus_update_time", int(e.control.value), "w"),
+                            ),
                         ]),
                     ],
                 )
