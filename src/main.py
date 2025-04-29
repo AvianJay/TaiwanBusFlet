@@ -33,7 +33,7 @@ def main(page: ft.Page):
             bus_timer_text,
         ]),
     )
-    # bus_view.scroll = ft.ScrollMode.AUTO
+    #bus_view.scroll = ft.ScrollMode.AUTO
 
     def bus_start_update():
         while page.route == "/viewbus":
@@ -62,6 +62,7 @@ def main(page: ft.Page):
                             ft.Text(f"{stop["stop_name"]} {stop["sec"]}") for stop in path_data["stops"]
                         ],
                         alignment=ft.MainAxisAlignment.START,
+                        scroll = ft.ScrollMode.AUTO,
                     ),
                 )
                 tabs.append(tab)
@@ -74,12 +75,12 @@ def main(page: ft.Page):
                 )
             )
             page.update()
-            timer = config.bus_update_time
+            timer = config.config("bus_update_time")
             for i in range(timer + 1):
-                bus_timer_pb.value = i / timer
-                bus_timer_text.value = f"{timer - i} 秒前更新"
-                page.update()
                 time.sleep(1)
+                bus_timer_pb.value = i / timer
+                bus_timer_text.value = f"{timer - i} 秒後更新"
+                page.update()
             bus_timer_pb.value = None
             # time.sleep(10)  # Simulate a delay for the bus update
             print("Bus info updated")
@@ -119,8 +120,9 @@ def main(page: ft.Page):
                     [
                         ft.AppBar(leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.Column([
-                            ft.Text("這是設定頁面 WIP"),
+                            ft.Text("這是設定頁面 WIP 哈哈"),
                             create_button(ft.Icons.SETTINGS, "測試", lambda e: None),
+                            # dropdown
                         ]),
                     ],
                 )
