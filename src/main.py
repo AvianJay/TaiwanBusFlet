@@ -59,7 +59,14 @@ def main(page: ft.Page):
                 ft.TextButton(
                     content=ft.Row(
                         [
-                            ft.Text(stop["sec"]),
+                            ft.Container(
+                                content=ft.Text(stop["sec"]),
+                                width=50,
+                                height=50,
+                                alignment=ft.alignment.center,
+                                bgcolor=ft.Colors.GREY_200,
+                                border_radius=30,
+                            ),
                             ft.Text(stop["stop_name"]),
                         ]
                     )
@@ -88,7 +95,7 @@ def main(page: ft.Page):
             bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
             for path_id, path_data in timetexts.items():
                 for i, path in enumerate(path_data):
-                    path.content.controls[0].value = bus_info[path_id]["stops"][i]["sec"]
+                    path.content.controls[0].content.value = config.get_time_text(bus_info[path_id]["stops"][i])
                     path.content.controls[1].value = bus_info[path_id]["stops"][i]["stop_name"]
             page.update()
             timer = int(config.config("bus_update_time"))

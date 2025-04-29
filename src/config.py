@@ -1,6 +1,7 @@
 import os
 import json
 import taiwanbus
+import flet as ft
 from importlib.metadata import version
 
 # info
@@ -55,3 +56,15 @@ def config(key, value=None, mode="r"):
         return True
     else:
         raise ValueError("Invalid mode" + mode)
+
+def get_time_text(stop: dict) -> str:
+    if stop.get("msg"):
+        return stop["msg"], 
+    elif stop["sec"] <= 0:
+        return "進站中"
+    else:
+        if stop["sec"] < 60:
+            return str(stop["sec"]) + "秒"
+        else:
+            minute = stop["sec"] // 60
+            return str(minute) + "分"
