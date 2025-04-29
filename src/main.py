@@ -157,6 +157,7 @@ def main(page: ft.Page):
                                 min=1,
                                 max=60,
                                 label="{value} 秒",
+                                divisions=59,
                                 value=config.config("bus_update_time"),
                                 on_change=lambda e: config.config("bus_update_time", int(e.control.value), "w"),
                             ),
