@@ -57,14 +57,14 @@ def config(key, value=None, mode="r"):
     else:
         raise ValueError("Invalid mode" + mode)
 
-def get_time_text(stop: dict) -> str:
+def get_time_text(stop: dict):
     if stop.get("msg"):
-        return stop["msg"], 
+        return stop["msg"], ft.Colors.GREY_100, ft.Colors.PRIMARY
     elif stop["sec"] <= 0:
-        return "進站中"
+        return "進站中", ft.Colors.RED_900, ft.Colors.WHITE
     else:
         if stop["sec"] < 60:
-            return str(stop["sec"]) + "秒"
+            return str(stop["sec"]) + "秒", ft.Colors.RED_700, ft.Colors.WHITE
         else:
             minute = stop["sec"] // 60
-            return str(minute) + "分"
+            return str(minute) + "分", ft.Colors.RED_500 if minute < 3 else ft.Colors.GREY_200, ft.Colors.WHITE if minute < 3 else ft.Colors.PRIMARY

@@ -20,7 +20,7 @@ def main(page: ft.Page):
 
     bus_view = ft.View("/viewbus")
     bus_view.appbar = ft.AppBar(
-        leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")),
+        leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
         title=ft.Text("公車資訊"),
         bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
     )
@@ -95,7 +95,10 @@ def main(page: ft.Page):
             bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
             for path_id, path_data in timetexts.items():
                 for i, path in enumerate(path_data):
-                    path.content.controls[0].content.value = config.get_time_text(bus_info[path_id]["stops"][i])
+                    time_text, bgcolor, textcolor = config.get_time_text(bus_info[path_id]["stops"][i])
+                    path.content.controls[0].content.value = time_text
+                    path.content.controls[0].bgcolor = bgcolor
+                    path.content.controls[0].content.color = textcolor
                     path.content.controls[1].value = bus_info[path_id]["stops"][i]["stop_name"]
             page.update()
             timer = int(config.config("bus_update_time"))
@@ -141,10 +144,9 @@ def main(page: ft.Page):
                 ft.View(
                     "/settings",
                     [
-                        ft.AppBar(leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.Column([
                             ft.Text("這是設定頁面 WIP 哈哈"),
-                            create_button(ft.Icons.SETTINGS, "測試", lambda e: None),
                             # dropdown
                             ft.Dropdown(
                                 label="選擇資料庫",
@@ -181,23 +183,6 @@ def main(page: ft.Page):
                 )
             )
         page.update()
-
-    def create_button(icon, text, on_click):
-        return ft.Container(
-            content=ft.Column(
-                [
-                    ft.Icon(icon, size=24),
-                    ft.Text(text, size=12),
-                ],
-                alignment=ft.MainAxisAlignment.START,
-                horizontal_alignment=ft.CrossAxisAlignment.START,
-            ),
-            padding=10,
-            alignment=ft.alignment.center,
-            border_radius=8,
-            bgcolor=ft.colors.LIGHT_BLUE_50,
-            on_click=on_click,
-        )
     
     # home page
     def home_show_page(index):
