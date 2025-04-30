@@ -44,9 +44,21 @@ def main(page: ft.Page):
             )
             page.open(snackbar)
             return
+        bus_timer_pb.color = ft.Colors.PRIMARY
+        bus_timer_text.color = ft.Colors.BLACK
+        bus_timer_text.value = "正在更新"
         bus_view.controls.clear()
-        route_info = asyncio.run(taiwanbus.fetch_route(config.current_bus))[0]
-        bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+        try:
+            route_info = asyncio.run(taiwanbus.fetch_route(config.current_bus))[0]
+            bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+        except:
+            page.go("/")
+            snackbar = ft.SnackBar(
+                content=ft.Text("無法讀取公車資訊！"),
+                action="確定",
+            )
+            page.open(snackbar)
+            return
         bus_view.appbar = ft.AppBar(
             leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")),
             title=ft.Text(route_info["route_name"]),
@@ -92,7 +104,29 @@ def main(page: ft.Page):
                 )
             )
         while page.route == "/viewbus":
-            bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+            try:
+                bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+            except:
+                bus_timer_pb.color = ft.Colors.RED_800
+                bus_timer_text.color = ft.Colors.RED_800
+                bus_timer_text.value = "更新錯誤！"
+                bus_info = None
+                tried = 0
+                while not bus_info:
+                    if not page.route == "/viewbus":
+                        break
+                    try:
+                        bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+                    except:
+                        tried += 1
+                        bus_timer_text.value = f"更新錯誤！ 嘗試第 {tried} 次"
+                        page.update()
+                        time.sleep(3)
+                bus_timer_pb.color = ft.Colors.PRIMARY
+                bus_timer_text.color = ft.Colors.BLACK
+                if not page.route == "/viewbus":
+                    return
+                        
             for path_id, path_data in timetexts.items():
                 for i, path in enumerate(path_data):
                     time_text, bgcolor, textcolor = config.get_time_text(bus_info[path_id]["stops"][i])
@@ -108,9 +142,9 @@ def main(page: ft.Page):
                 bus_timer_text.value = f"{timer - i} 秒後更新"
                 page.update()
             bus_timer_pb.value = None
+            page.update()
             # time.sleep(10)  # Simulate a delay for the bus update
             print("Bus info updated")
-        page.open(ft.SnackBar(content=ft.Text("DEBUG: " + page.route)))
 
     def search_select(e):
         config.current_bus = e.selection.value.split("/")[1]
