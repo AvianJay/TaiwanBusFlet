@@ -110,6 +110,7 @@ def main(page: ft.Page):
             bus_timer_pb.value = None
             # time.sleep(10)  # Simulate a delay for the bus update
             print("Bus info updated")
+        page.open(ft.SnackBar(content=ft.Text("DEBUG: " + page.route)))
 
     def search_select(e):
         config.current_bus = e.selection.value.split("/")[1]
@@ -213,7 +214,7 @@ def main(page: ft.Page):
                 ),
             )
         elif index == 1:
-            home_view.controls.append(ft.Text("這是自動化頁面 WIP"))
+            home_view.controls.append(ft.Text("¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯\n空空如也"))
         page.update()
 
     # 設定 NavigationBar 並處理切換事件
