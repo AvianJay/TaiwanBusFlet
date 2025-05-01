@@ -72,7 +72,7 @@ def get_time_text(stop: dict):
             minute = stop["sec"] // 60
             return str(minute) + "分", ft.Colors.RED_500 if minute < 3 else ft.Colors.GREY_200, ft.Colors.WHITE if minute < 3 else ft.Colors.PRIMARY
 
-def favorite_stop(favorite_name=None, mode="r", stop: int = None):
+def favorite_stop(favorite_name=None, mode="r", data=None):
     if mode == "r": # read
         try:
             with open(os.path.join(datadir, "favorite.json"), "r") as f:
@@ -82,18 +82,14 @@ def favorite_stop(favorite_name=None, mode="r", stop: int = None):
                 else:
                     return favorites
         except FileNotFoundError:
-            return []
-    elif mode == "a": # add
-        if not stop:
-            raise ValueError("stop is None")
+            return [] if favorite_name else {}
+    elif mode == "s": # set
+        if not data:
+            raise ValueError("data is None")
         if not favorite_name:
             raise ValueError("favorite_name is None")
         current_favorite = favorite_stop("r")
-        current_favorite_with_name = current_favorite.get(favorite_name, [])
-        if stop in current_favorite_with_name:
-            return False
-        current_favorite_with_name.append(stop)
-        current_favorite[favorite_name] = current_favorite_with_name
+        current_favorite[favorite_name] = data
         with open(os.path.join(datadir, "favorite.json"), "w") as f:
             json.dump(current_favorite, f)
         return True
@@ -101,11 +97,11 @@ def favorite_stop(favorite_name=None, mode="r", stop: int = None):
         if not favorite_name:
             raise ValueError("favorite_name is None")
         current_favorite = favorite_stop("r")
-        if stop:
+        if data:
             current_favorite_with_name = current_favorite.get(favorite_name, [])
-            if stop not in current_favorite_with_name:
+            if data not in current_favorite_with_name:
                 return False
-            current_favorite_with_name.remove(stop)
+            current_favorite_with_name.remove(data)
             current_favorite[favorite_name] = current_favorite_with_name
         else:
             if favorite_name not in current_favorite:

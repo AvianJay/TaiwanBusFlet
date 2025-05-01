@@ -49,7 +49,16 @@ def main(page: ft.Page):
         bus_timer_text.value = "正在更新"
         bus_view.controls.clear()
         try:
-            route_info = asyncio.run(taiwanbus.fetch_route(config.current_bus))[0]
+            route_info_list = asyncio.run(taiwanbus.fetch_route(config.current_bus))
+            if len(route_info_list) == 0:
+                page.go("/")
+                snackbar = ft.SnackBar(
+                    content=ft.Text("找不到公車！"),
+                    action="確定",
+                )
+                page.open(snackbar)
+                return
+            route_info = route_info_list[0]
             bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
         except:
             page.go("/")
@@ -103,7 +112,8 @@ def main(page: ft.Page):
                     expand=1,
                 )
             )
-        while page.route == "/viewbus":
+        current_route = page.route
+        while page.route == current_route:
             try:
                 bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
             except:
@@ -113,7 +123,7 @@ def main(page: ft.Page):
                 bus_info = None
                 tried = 0
                 while not bus_info:
-                    if not page.route == "/viewbus":
+                    if not page.route == current_route:
                         break
                     try:
                         bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
@@ -124,7 +134,7 @@ def main(page: ft.Page):
                         time.sleep(3)
                 bus_timer_pb.color = ft.Colors.PRIMARY
                 bus_timer_text.color = ft.Colors.BLACK
-                if not page.route == "/viewbus":
+                if not page.route == current_route:
                     return
                         
             for path_id, path_data in timetexts.items():
@@ -137,6 +147,8 @@ def main(page: ft.Page):
             page.update()
             timer = int(config.config("bus_update_time"))
             for i in range(timer + 1):
+                if not page.route == current_route:
+                    return
                 time.sleep(1)
                 bus_timer_pb.value = i / timer
                 bus_timer_text.value = f"{timer - i} 秒後更新"
@@ -147,9 +159,9 @@ def main(page: ft.Page):
             print("Bus info updated")
 
     def search_select(e):
-        config.current_bus = e.selection.value.split("/")[1]
-        print("Selected bus:", config.current_bus)
-        page.go("/viewbus")
+        selected = e.selection.value.split("/")[1]
+        print("Selected bus:", selected)
+        page.go(f"/viewbus/{selected}")
 
     def route_change(route):
         page.views.clear()
@@ -171,9 +183,70 @@ def main(page: ft.Page):
                     ],
                 )
             )
-        if page.route == "/viewbus":
+        if page.route.startswith("/viewbus"):
+            routekey = page.route.split("/")[-1]
+            config.current_bus = routekey
             page.views.append(bus_view)
             threading.Thread(target=bus_start_update, daemon=True).start()
+        if page.route == "/favorite":
+            favorites = config.favorite_stop()
+            if favorites:
+                tabs = []
+                for k in favorites.keys():
+                    tt = ft.Tab(
+                        text=k,
+                        content=ft.Column(
+                            [
+                                ft.TextButton(
+                                    content=ft.Row(
+                                        [
+                                            ft.Container(
+                                                content=ft.Text("Yee"),
+                                                width=50,
+                                                height=50,
+                                                alignment=ft.alignment.center,
+                                                bgcolor=ft.Colors.GREY_200,
+                                                border_radius=30,
+                                            ),
+                                            ft.Text(id),
+                                        ]
+                                    )
+                                ) for id in favorites[k]
+                            ],
+                            alignment=ft.MainAxisAlignment.START,
+                            scroll = ft.ScrollMode.AUTO,
+                        )
+                    )
+                    tabs.append(tt)
+                t = ft.Tabs(
+                    selected_index=1,
+                    animation_duration=300,
+                    tabs=tabs,
+                    expand=1,
+                )
+            else:
+                t = ft.Tabs(
+                    selected_index=1,
+                    animation_duration=300,
+                    tabs=[
+                        ft.Tab(
+                            text="No",
+                            content=ft.Container(
+                                content=ft.Text("Nothing"),
+                            ),
+                        )
+                    ],
+                    expand=1,
+                )
+            page.views.append(
+                ft.View(
+                    "/favorite",
+                    [
+                        ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("我的最愛"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        t,
+                    ],
+                )
+            )
         if page.route == "/settings":
             page.views.append(
                 ft.View(
@@ -236,12 +309,33 @@ def main(page: ft.Page):
                                         ft.Text(value="查詢公車", size=20),
                                         ft.Text(value="找到你的公車"),
                                     ],
-                                     alignment=ft.MainAxisAlignment.CENTER,
+                                    alignment=ft.MainAxisAlignment.CENTER,
                                     spacing=5,
                                 ),
                             ]),
                         padding=10,
                         on_click=lambda e: page.go("/search"),
+                        alignment=ft.alignment.center,
+                    ),
+                    style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),
+                ),
+            )
+            home_view.controls.append(
+                ft.TextButton(
+                    content=ft.Container(
+                        content=ft.Row([
+                                ft.Icon(name=ft.Icons.FAVORITE),
+                                ft.Column(
+                                    [
+                                        ft.Text(value="我的最愛", size=20),
+                                        ft.Text(value="最愛的就是你"),
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                    spacing=5,
+                                ),
+                            ]),
+                        padding=10,
+                        on_click=lambda e: page.go("/favorite"),
                         alignment=ft.alignment.center,
                     ),
                     style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),
