@@ -230,9 +230,9 @@ def main(page: ft.Page):
                     animation_duration=300,
                     tabs=[
                         ft.Tab(
-                            text="No",
+                            text="WIP",
                             content=ft.Container(
-                                content=ft.Text("Nothing"),
+                                content=ft.Text("WORK IN PROGRESS"),
                             ),
                         )
                     ],
@@ -342,7 +342,7 @@ def main(page: ft.Page):
                 ),
             )
         elif index == 1:
-            home_view.controls.append(ft.Text("¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯\n空空如也"))
+            home_view.controls.append(ft.Text("¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯\n空空如也", text_align=ft.TextAlign.CENTER, size=30))
         page.update()
 
     # 設定 NavigationBar 並處理切換事件
