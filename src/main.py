@@ -163,6 +163,21 @@ def main(page: ft.Page):
         print("Selected bus:", selected)
         page.go(f"/viewbus/{selected}")
 
+    def favorite_group_clicked(e):
+        page.open(
+            ft.AlertDialog(
+                title=ft.Text("確定刪除？"),
+                content=ft.Text(f"您確定要刪除 {e.text} ？"),
+                actions=[
+                    ft.TextButton("算了", on_click=lambda e: None),
+                    ft.TextButton("好啊", on_click=lambda e: None),
+                ],
+            )
+        )
+
+    def favorite_add(e):
+        pass
+
     def route_change(route):
         page.views.clear()
         page.views.append(home_view)
@@ -188,7 +203,7 @@ def main(page: ft.Page):
             config.current_bus = routekey
             page.views.append(bus_view)
             threading.Thread(target=bus_start_update, daemon=True).start()
-        if page.route == "/favorite":
+        if page.route.startswith("/favorites"):
             favorites = config.favorite_stop()
             if favorites:
                 tabs = []
@@ -210,7 +225,8 @@ def main(page: ft.Page):
                                             ),
                                             ft.Text(id),
                                         ]
-                                    )
+                                    ),
+                                    on_click=lambda e: page.go(f"/viewbus/{id}")
                                 ) for id in favorites[k]
                             ],
                             alignment=ft.MainAxisAlignment.START,
@@ -240,10 +256,36 @@ def main(page: ft.Page):
                 )
             page.views.append(
                 ft.View(
-                    "/favorite",
+                    "/favorites",
                     [
-                        ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("我的最愛"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        ft.AppBar(
+                            leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
+                            title=ft.Text("我的最愛"),
+                            bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+                            actions=[
+                                ft.IconButton(ft.Icons.SETTINGS, on_click=lambda e: page.go("/favorites/manage")),
+                            ],
+                        ),
                         t,
+                    ],
+                )
+            )
+        if page.route == "/favorites/manage":
+            favorites = config.favorite_stop()
+            favorite_groups = [ft.TextButton(text=fav, on_click=favorite_group_clicked) for fav in favorites.keys()]
+            page.views.append(
+                ft.View(
+                    "/favorites/manage",
+                    [
+                        ft.AppBar(
+                            leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/favorites")),
+                            title=ft.Text("管理最愛群組"),
+                            bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+                            actions=[
+                                ft.IconButton(ft.Icons.ADD, on_click=favorite_add),
+                            ],
+                        ),
+                        ft.Column(favorite_groups),
                     ],
                 )
             )
@@ -335,7 +377,7 @@ def main(page: ft.Page):
                                 ),
                             ]),
                         padding=10,
-                        on_click=lambda e: page.go("/favorite"),
+                        on_click=lambda e: page.go("/favorites"),
                         alignment=ft.alignment.center,
                     ),
                     style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),
