@@ -12,7 +12,7 @@ def main(page: ft.Page):
     home_view = ft.View("/")
     home_view.appbar = ft.AppBar(
         title=ft.Text("TaiwanBus"),
-        bgcolor=ft.colors.SURFACE_VARIANT,
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
         actions=[
             ft.IconButton(ft.Icons.SETTINGS, on_click=lambda e: page.go("/settings")),
         ],
@@ -22,12 +22,12 @@ def main(page: ft.Page):
     bus_view.appbar = ft.AppBar(
         leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
         title=ft.Text("公車資訊"),
-        bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
     )
     bus_timer_pb = ft.ProgressBar()
     bus_timer_text = ft.Text("正在更新")
     bus_view.bottom_appbar = ft.BottomAppBar(
-        bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
         content=ft.Column([
             bus_timer_pb,
             bus_timer_text,
@@ -69,9 +69,9 @@ def main(page: ft.Page):
             page.open(snackbar)
             return
         bus_view.appbar = ft.AppBar(
-            leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")),
+            leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
             title=ft.Text(route_info["route_name"]),
-            bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+            bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
         )
         timetexts = {}
         tabs = []
@@ -328,7 +328,7 @@ def main(page: ft.Page):
                                 ft.Column(
                                     [
                                         ft.Text(value="我的最愛", size=20),
-                                        ft.Text(value="最愛的就是你"),
+                                        ft.Text(value="最愛的就是你"), # 好啦之後會改啦
                                     ],
                                     alignment=ft.MainAxisAlignment.CENTER,
                                     spacing=5,
