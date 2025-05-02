@@ -49,7 +49,7 @@ def main(page: ft.Page):
         bus_timer_text.value = "正在更新"
         bus_view.controls.clear()
         try:
-            route_info_list = asyncio.run(taiwanbus.fetch_route(config.current_bus))
+            route_info_list = asyncio.run(taiwanbus.fetch_route(config.current_bus["routekey"]))
             if len(route_info_list) == 0:
                 page.go("/")
                 snackbar = ft.SnackBar(
@@ -59,7 +59,7 @@ def main(page: ft.Page):
                 page.open(snackbar)
                 return
             route_info = route_info_list[0]
-            bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+            bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus["routekey"]))
         except:
             page.go("/")
             snackbar = ft.SnackBar(
@@ -75,6 +75,7 @@ def main(page: ft.Page):
         )
         timetexts = {}
         tabs = []
+        paths = {}
         for path_id, path_data in bus_info.items():
             timetexts[path_id] = [
                 ft.TextButton(
@@ -90,32 +91,39 @@ def main(page: ft.Page):
                             ),
                             ft.Text(stop["stop_name"]),
                         ]
-                    )
+                    ),
+                    key=str(stop["stop_id"]),
                  ) for stop in path_data["stops"]
             ]
+            paths[path_id] = ft.Column(
+                [
+                    row for row in timetexts[path_id]
+                ],
+                alignment=ft.MainAxisAlignment.START,
+                scroll=ft.ScrollMode.AUTO,
+            )
             tab = ft.Tab(
                 text=path_data["name"],
-                content=ft.Column(
-                    [
-                        row for row in timetexts[path_id]
-                    ],
-                    alignment=ft.MainAxisAlignment.START,
-                    scroll = ft.ScrollMode.AUTO,
-                )
+                content=paths[path_id],
             )
             tabs.append(tab)
+        selindex = config.current_bus["pathid"] if config.current_bus["pathid"] else 0
+        selstop = config.current_bus["stopid"] if config.current_bus["stopid"] else None
         bus_view.controls.append(
                 ft.Tabs(
-                    selected_index=1,
+                    selected_index=selindex,
                     animation_duration=300,
                     tabs=tabs,
                     expand=1,
                 )
             )
         current_route = page.route
+        if selstop:
+            page.update()
+            paths[selindex].scroll_to(key=str(selstop), duration=500)
         while page.route == current_route:
             try:
-                bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+                bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus["routekey"]))
             except:
                 bus_timer_pb.color = ft.Colors.RED_800
                 bus_timer_text.color = ft.Colors.RED_800
@@ -131,9 +139,10 @@ def main(page: ft.Page):
                         tried += 1
                         bus_timer_text.value = f"更新錯誤！ 嘗試第 {tried} 次"
                         page.update()
-                        time.sleep(3)
+                        time.sleep(config.config("bus_error_update_time"))
                 bus_timer_pb.color = ft.Colors.PRIMARY
                 bus_timer_text.color = ft.Colors.BLACK
+                bus_timer_text.value = "正在更新"
                 if not page.route == current_route:
                     return
                         
@@ -190,7 +199,7 @@ def main(page: ft.Page):
                 ft.View(
                     "/search",
                     [
-                        ft.AppBar(leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("查詢公車"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("查詢公車"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.AutoComplete(
                             suggestions=suggestions,
                             on_select=search_select,
@@ -199,8 +208,15 @@ def main(page: ft.Page):
                 )
             )
         if page.route.startswith("/viewbus"):
-            routekey = page.route.split("/")[-1]
-            config.current_bus = routekey
+            _split = page.route.split("/")
+            routekey = _split[2]
+            pathid = page.route.split("/")[3] if len(_split) > 3 else None
+            stopid = page.route.split("/")[4] if len(_split) > 4 else None
+            config.current_bus = {
+                "routekey": routekey,
+                "pathid": pathid,
+                "stopid": stopid,
+            }
             page.views.append(bus_view)
             threading.Thread(target=bus_start_update, daemon=True).start()
         if page.route.startswith("/favorites"):
@@ -321,6 +337,16 @@ def main(page: ft.Page):
                                 divisions=59,
                                 value=config.config("bus_update_time"),
                                 on_change=lambda e: config.config("bus_update_time", int(e.control.value), "w"),
+                            ),
+                            # error time
+                            ft.Text("更新錯誤時的重試間隔"),
+                            ft.Slider(
+                                min=1,
+                                max=60,
+                                label="{value} 秒",
+                                divisions=59,
+                                value=config.config("bus_error_update_time"),
+                                on_change=lambda e: config.config("bus_error_update_time", int(e.control.value), "w"),
                             ),
                             # app info
                             ft.Text("版本資訊"),

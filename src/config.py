@@ -6,7 +6,7 @@ import flet as ft
 
 # info
 app_version = "0.0.1"
-config_version = 1
+config_version = 2
 # taiwanbus_version = version("taiwanbus")
 # No package metadata when complied
 # taiwanbus.__version__ will add in 0.1.0
@@ -14,7 +14,6 @@ taiwanbus_version = "0.0.9"
 
 # some global variables
 current_bus = None
-bus_update_time = 10  # seconds
 
 platform = os.getenv("FLET_PLATFORM")
 datadir = os.getenv("FLET_APP_STORAGE_DATA", ".")
@@ -27,6 +26,7 @@ default_config = {
     "config_version": config_version,
     "provider": "twn",
     "bus_update_time": 10,
+    "bus_error_update_time": 10,
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None
@@ -47,6 +47,10 @@ if _config.get("config_version", 0) < config_version:
     for k in default_config.keys():
         if not _config.get(k):
             _config[k] = default_config[k]
+    _config["config_version"] = config_version
+    print("Saving...")
+    json.dump(_config, open(config_path, "w"))
+    print("Done.")
 
 taiwanbus.update_provider(_config.get("provider"))
 
