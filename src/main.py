@@ -177,11 +177,11 @@ def main(page: ft.Page):
     def favorite_group_clicked(e):
         def on_group_delete_clicked(ee):
             page.close(deletedialog)
-            config.favorite_stop(favorite_name=e.text, mode="d")
+            config.favorite_stop(favorite_name=e.control.text, mode="d")
             page.go("/favorites/manage")
         deletedialog = ft.AlertDialog(
                 title=ft.Text("確定刪除？"),
-                content=ft.Text(f"您確定要刪除 {e.text} ？"),
+                content=ft.Text(f"您確定要刪除 {e.control.text} ？"),
                 actions=[
                     ft.TextButton("算了", on_click=lambda e: page.close(deletedialog)),
                     ft.TextButton("好啊", on_click=on_group_delete_clicked),
@@ -193,8 +193,9 @@ def main(page: ft.Page):
         tf = ft.TextField(label="群組名稱")
         def on_group_add_clicked(ee):
             page.close(adddialog)
-            config.favorite_stop(favorite_name=tf, mode="s", data=[])
+            config.favorite_stop(favorite_name=tf.value, mode="s", data=[])
             page.go("/favorites/manage")
+            page.update()
         adddialog = ft.AlertDialog(
                 title=ft.Text("新增群組"),
                 content=tf,

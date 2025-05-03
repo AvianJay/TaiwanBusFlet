@@ -62,7 +62,7 @@ def config(key, value=None, mode="r"):
         json.dump(_config, open(config_path, "w"))
         return True
     else:
-        raise ValueError("Invalid mode" + mode)
+        raise ValueError(f"Invalid mode: {mode}")
 
 def get_time_text(stop: dict):
     if stop.get("msg"):
@@ -76,43 +76,54 @@ def get_time_text(stop: dict):
             minute = stop["sec"] // 60
             return str(minute) + "分", ft.Colors.RED_500 if minute < 3 else ft.Colors.GREY_200, ft.Colors.WHITE if minute < 3 else ft.Colors.PRIMARY
 
+def read_favorites():
+    try:
+        with open(os.path.join(datadir, "favorite.json"), "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
 def favorite_stop(favorite_name=None, mode="r", data=None):
     if mode == "r": # read
-        try:
-            with open(os.path.join(datadir, "favorite.json"), "r") as f:
-                favorites = json.load(f)
-                if favorite_name:
-                    return favorites.get(favorite_name, [])
-                else:
-                    return favorites
-        except FileNotFoundError:
-            return [] if favorite_name else {}
+        favorites = read_favorites()
+        if favorite_name:
+            return favorites.get(favorite_name, [])
+        else:
+            return favorites
     elif mode == "s": # set
         if data is None:
             raise ValueError("data is None")
         if not favorite_name:
             raise ValueError("favorite_name is None")
-        current_favorite = favorite_stop()
-        current_favorite[favorite_name] = data
-        with open(os.path.join(datadir, "favorite.json"), "w") as f:
+        with open(os.path.join(datadir, "favorite.json"), "r+", encoding="utf-8") as f:
+            current_favorite = json.load(f)
+            current_favorite[favorite_name] = data
+            f.seek(0)
             json.dump(current_favorite, f)
+            f.truncate()
         return True
     elif mode == "d": # delete
         if not favorite_name:
             raise ValueError("favorite_name is None")
-        current_favorite = favorite_stop()
-        if data:
-            current_favorite_with_name = current_favorite.get(favorite_name, [])
-            if data not in current_favorite_with_name:
-                return False
-            current_favorite_with_name.remove(data)
-            current_favorite[favorite_name] = current_favorite_with_name
-        else:
-            if favorite_name not in current_favorite:
-                return False
-            del current_favorite[favorite_name]
-        with open(os.path.join(datadir, "favorite.json"), "w") as f:
+        with open(os.path.join(datadir, "favorite.json"), "r+", encoding="utf-8") as f:
+            current_favorite = json.load(f)
+            if data:
+                current_favorite_with_name = current_favorite.get(favorite_name, [])
+                if data in current_favorite_with_name:
+                    current_favorite_with_name.remove(data)
+                else:
+                    raise ValueError(f"Data '{data}' not found in the favorite list.")
+                current_favorite[favorite_name] = current_favorite_with_name
+            else:
+                if favorite_name not in current_favorite:
+                    return False
+                del current_favorite[favorite_name]
+            f.seek(0)
             json.dump(current_favorite, f)
+            f.truncate()
         return True
     else:
         raise ValueError("Invalid mode" + mode)
+
+if not os.path.exists(os.path.join(datadir, "favorite.json")):
+    json.dump({}, open(os.path.join(datadir, "favorite.json"), "w"))
