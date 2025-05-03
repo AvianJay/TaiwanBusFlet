@@ -5,6 +5,8 @@ import config
 import time
 import threading
 
+# Todo: 弄成多個檔案
+
 def main(page: ft.Page):
     page.title = "TaiwanBus"
     page.adaptive = True
@@ -173,19 +175,35 @@ def main(page: ft.Page):
         page.go(f"/viewbus/{selected}")
 
     def favorite_group_clicked(e):
-        page.open(
-            ft.AlertDialog(
+        def on_group_delete_clicked(ee):
+            page.close(deletedialog)
+            config.favorite_stop(favorite_name=e.text, mode="d")
+            page.go("/favorites/manage")
+        deletedialog = ft.AlertDialog(
                 title=ft.Text("確定刪除？"),
                 content=ft.Text(f"您確定要刪除 {e.text} ？"),
                 actions=[
-                    ft.TextButton("算了", on_click=lambda e: None),
-                    ft.TextButton("好啊", on_click=lambda e: None),
+                    ft.TextButton("算了", on_click=lambda e: page.close(deletedialog)),
+                    ft.TextButton("好啊", on_click=on_group_delete_clicked),
                 ],
             )
-        )
+        page.open(deletedialog)
 
     def favorite_add(e):
-        pass
+        tf = ft.TextField(label="群組名稱")
+        def on_group_add_clicked(ee):
+            page.close(adddialog)
+            config.favorite_stop(favorite_name=tf, mode="s", data=[])
+            page.go("/favorites/manage")
+        adddialog = ft.AlertDialog(
+                title=ft.Text("新增群組"),
+                content=tf,
+                actions=[
+                    ft.TextButton("取消", on_click=lambda e: page.close(adddialog)),
+                    ft.TextButton("新增", on_click=on_group_add_clicked),
+                ],
+            )
+        page.open(adddialog)
 
     def route_change(route):
         page.views.clear()
@@ -242,7 +260,7 @@ def main(page: ft.Page):
                                             ft.Text(id),
                                         ]
                                     ),
-                                    on_click=lambda e: page.go(f"/viewbus/{id}")
+                                    on_click=lambda e: page.go(f"/viewbus/{id['routekey']}/{id['pathid']}/{id['stopid']}")
                                 ) for id in favorites[k]
                             ],
                             alignment=ft.MainAxisAlignment.START,

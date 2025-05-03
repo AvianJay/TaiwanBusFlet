@@ -88,11 +88,11 @@ def favorite_stop(favorite_name=None, mode="r", data=None):
         except FileNotFoundError:
             return [] if favorite_name else {}
     elif mode == "s": # set
-        if not data:
+        if data is None:
             raise ValueError("data is None")
         if not favorite_name:
             raise ValueError("favorite_name is None")
-        current_favorite = favorite_stop("r")
+        current_favorite = favorite_stop()
         current_favorite[favorite_name] = data
         with open(os.path.join(datadir, "favorite.json"), "w") as f:
             json.dump(current_favorite, f)
@@ -100,7 +100,7 @@ def favorite_stop(favorite_name=None, mode="r", data=None):
     elif mode == "d": # delete
         if not favorite_name:
             raise ValueError("favorite_name is None")
-        current_favorite = favorite_stop("r")
+        current_favorite = favorite_stop()
         if data:
             current_favorite_with_name = current_favorite.get(favorite_name, [])
             if data not in current_favorite_with_name:
