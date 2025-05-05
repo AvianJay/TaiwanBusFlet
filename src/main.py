@@ -136,7 +136,7 @@ def main(page: ft.Page):
                     if not page.route == current_route:
                         break
                     try:
-                        bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus))
+                        bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus["routekey"]))
                     except:
                         tried += 1
                         bus_timer_text.value = f"更新錯誤！ 嘗試第 {tried} 次"
@@ -229,8 +229,8 @@ def main(page: ft.Page):
         if page.route.startswith("/viewbus"):
             _split = page.route.split("/")
             routekey = _split[2]
-            pathid = page.route.split("/")[3] if len(_split) > 3 else None
-            stopid = page.route.split("/")[4] if len(_split) > 4 else None
+            pathid = int(page.route.split("/")[3]) if len(_split) > 3 else None
+            stopid = int(page.route.split("/")[4]) if len(_split) > 4 else None
             config.current_bus = {
                 "routekey": routekey,
                 "pathid": pathid,
