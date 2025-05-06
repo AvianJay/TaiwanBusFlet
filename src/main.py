@@ -37,6 +37,29 @@ def main(page: ft.Page):
     )
     #bus_view.scroll = ft.ScrollMode.AUTO
 
+    def add_to_favorite(routekey, pathid, stopid):
+        favorites = config.favorite_stop()
+        def af_on_click(name):
+            favorites[name].append({"routekey": routekey, "pathid": pathid, "stopid": stopid})
+            config.favorite_stop(name, "s", favorites[name])
+            page.close(adddialog)
+        tf = ft.Column([ ft.TextButton(n, on_click=lambda e: af_on_click(n)) for n in favorites.keys() ])
+        adddialog = ft.AlertDialog(
+                title=ft.Text("新增至我的最愛..."),
+                content=tf,
+            )
+        page.open(adddialog)
+
+    def stop_on_click(routekey, pathid, stopid, stopname):
+        tf = ft.Column([
+            ft.TextButton("新增至我的最愛", on_click=lambda e: add_to_favorite(routekey, pathid, stopid))
+        ])
+        stopdialog = ft.AlertDialog(
+                title=ft.Text(stopname),
+                content=tf,
+            )
+        page.open(stopdialog)
+
     def bus_start_update():
         if not config.current_bus:
             page.go("/")
@@ -47,7 +70,7 @@ def main(page: ft.Page):
             page.open(snackbar)
             return
         bus_timer_pb.color = ft.Colors.PRIMARY
-        bus_timer_text.color = ft.Colors.BLACK
+        bus_timer_text.color = None
         bus_timer_text.value = "正在更新"
         bus_view.controls.clear()
         try:
@@ -78,25 +101,30 @@ def main(page: ft.Page):
         timetexts = {}
         tabs = []
         paths = {}
+        stops = {} # for stop menu
         for path_id, path_data in bus_info.items():
-            timetexts[path_id] = [
-                ft.TextButton(
-                    content=ft.Row(
-                        [
-                            ft.Container(
-                                content=ft.Text(stop["sec"]),
-                                width=50,
-                                height=50,
-                                alignment=ft.alignment.center,
-                                bgcolor=ft.Colors.GREY_200,
-                                border_radius=30,
-                            ),
-                            ft.Text(stop["stop_name"]),
-                        ]
-                    ),
-                    key=str(stop["stop_id"]),
-                 ) for stop in path_data["stops"]
-            ]
+            timetexts[path_id] = []
+            for stop in path_data["stops"]:
+                stops[str(stop["stop_id"])] = stop
+                timetexts[path_id].append(
+                    ft.TextButton(
+                        content=ft.Row(
+                            [
+                                ft.Container(
+                                    content=ft.Text(stop["sec"]),
+                                    width=50,
+                                    height=50,
+                                    alignment=ft.alignment.center,
+                                    bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY),
+                                    border_radius=30,
+                                ),
+                                ft.Text(stop["stop_name"]),
+                            ]
+                        ),
+                        key=str(stop["stop_id"]),
+                        on_click=lambda e: stop_on_click(config.current_bus["routekey"], path_id, str(stops[e.control.key]["stop_id"]), stops[e.control.key]["stop_name"]),
+                     )
+                 )
             paths[path_id] = ft.Column(
                 [
                     row for row in timetexts[path_id]
@@ -143,7 +171,7 @@ def main(page: ft.Page):
                         page.update()
                         time.sleep(config.config("bus_error_update_time"))
                 bus_timer_pb.color = ft.Colors.PRIMARY
-                bus_timer_text.color = ft.Colors.BLACK
+                bus_timer_text.color = None
                 bus_timer_text.value = "正在更新"
                 if not page.route == current_route:
                     return

@@ -66,7 +66,7 @@ def config(key, value=None, mode="r"):
 
 def get_time_text(stop: dict):
     if stop.get("msg"):
-        return stop["msg"], ft.Colors.GREY_100, ft.Colors.PRIMARY
+        return stop["msg"], ft.Colors.with_opacity(0.1, ft.Colors.PRIMARY), ft.Colors.PRIMARY
     elif stop["sec"] <= 0:
         return "進站中", ft.Colors.RED_900, ft.Colors.WHITE
     else:
@@ -74,7 +74,7 @@ def get_time_text(stop: dict):
             return str(stop["sec"]) + "秒", ft.Colors.RED_700, ft.Colors.WHITE
         else:
             minute = stop["sec"] // 60
-            return str(minute) + "分", ft.Colors.RED_500 if minute < 3 else ft.Colors.GREY_200, ft.Colors.WHITE if minute < 3 else ft.Colors.PRIMARY
+            return str(minute) + "分", ft.Colors.RED_500 if minute < 3 else ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), ft.Colors.WHITE if minute < 3 else ft.Colors.PRIMARY
 
 def read_favorites():
     try:
