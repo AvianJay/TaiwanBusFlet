@@ -66,6 +66,7 @@ def config(key, value=None, mode="r"):
 
 def get_time_text(stop: dict):
     if stop.get("msg"):
+        stop["msg"] = "末班\n駛離" if stop["msg"] == "末班駛離" else stop["msg"]
         return stop["msg"], ft.Colors.with_opacity(0.1, ft.Colors.PRIMARY), ft.Colors.PRIMARY
     elif stop["sec"] <= 0:
         return "進站中", ft.Colors.RED_900, ft.Colors.WHITE
