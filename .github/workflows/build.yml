@@ -48,6 +48,16 @@ jobs:
         - name: Build IPA
           run: |
             poetry run flet build ipa --verbose --no-rich-output --compile-app --compile-packages
+        
+        - name: Generate unsigned IPA
+          run: |
+            mkdir build/ipa/temp/
+            mkdir build/ipa/temp/Payload/
+            mv build/ipa/*.xcarchive/Products/Applications/*.app build/ipa/temp/Payload/
+            rm -rf build/ipa/*.xcarchive
+            zip -r build/ipa/Generated_IPA.zip build/ipa/temp/Payload
+            mv build/ipa/Generated_IPA.zip build/ipa/Generated_IPA.ipa
+            rm -rf build/ipa/temp
 
         - name: Upload IPA
           uses: actions/upload-artifact@v4
