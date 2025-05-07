@@ -122,7 +122,7 @@ def main(page: ft.Page):
                             ]
                         ),
                         key=str(stop["stop_id"]),
-                        on_click=lambda e: stop_on_click(config.current_bus["routekey"], path_id, str(stops[e.control.key]["stop_id"]), stops[e.control.key]["stop_name"]),
+                        on_click=lambda e: stop_on_click(config.current_bus["routekey"], str(stops[e.control.key]["path_id"]), str(stops[e.control.key]["stop_id"]), stops[e.control.key]["stop_name"]),
                      )
                  )
             paths[path_id] = ft.Column(
@@ -270,12 +270,13 @@ def main(page: ft.Page):
             favorites = config.favorite_stop()
             if favorites:
                 tabs = []
+                stops = {} # fix
                 for k in favorites.keys():
-                    tt = ft.Tab(
-                        text=k,
-                        content=ft.Column(
-                            [
-                                ft.TextButton(
+                    tbs = []
+                    for id in favorites[k]:
+                        stops[id['stopid']] = id
+                        tbs.append(
+                            ft.TextButton(
                                     content=ft.Row(
                                         [
                                             ft.Container(
@@ -289,9 +290,14 @@ def main(page: ft.Page):
                                             ft.Text(id),
                                         ]
                                     ),
-                                    on_click=lambda e: page.go(f"/viewbus/{id['routekey']}/{id['pathid']}/{id['stopid']}")
-                                ) for id in favorites[k]
-                            ],
+                                    key=str(id['stopid']),
+                                    on_click=lambda e: page.go(f"/viewbus/{stops[e.control.key]['routekey']}/{stops[e.control.key]['pathid']}/{stops[e.control.key]['stopid']}")
+                                )
+                        )
+                    tt = ft.Tab(
+                        text=k,
+                        content=ft.Column(
+                            tbs,
                             alignment=ft.MainAxisAlignment.START,
                             scroll = ft.ScrollMode.AUTO,
                         )
