@@ -55,8 +55,10 @@ jobs:
             mkdir build/ipa/temp/Payload/
             mv build/ipa/*.xcarchive/Products/Applications/*.app build/ipa/temp/Payload/
             rm -rf build/ipa/*.xcarchive
-            zip -r build/ipa/Generated_IPA.zip build/ipa/temp/Payload
-            mv build/ipa/Generated_IPA.zip build/ipa/Generated_IPA.ipa
+            cd build/ipa/temp/
+            zip -r Generated_IPA.zip Payload
+            mv Generated_IPA.zip ../Generated_IPA.ipa
+            cd ../../../
             rm -rf build/ipa/temp
 
         - name: Upload IPA
