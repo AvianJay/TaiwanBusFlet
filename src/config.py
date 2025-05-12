@@ -6,10 +6,10 @@ import flet as ft
 
 # info
 app_version = "0.0.1"
-config_version = 2
+config_version = 3
 # taiwanbus_version = version("taiwanbus")
 # No package metadata when complied
-# taiwanbus.__version__ will add in 0.1.0
+# taiwanbus.__version__ will be added in 0.1.0
 taiwanbus_version = "0.0.9"
 
 # some global variables
@@ -26,7 +26,8 @@ default_config = {
     "config_version": config_version,
     "provider": "twn",
     "bus_update_time": 10,
-    "bus_error_update_time": 10,
+    "bus_error_update_time": 1,
+    "always_show_second": False,
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None
@@ -75,7 +76,8 @@ def get_time_text(stop: dict):
             return str(stop["sec"]) + "秒", ft.Colors.RED_700, ft.Colors.WHITE
         else:
             minute = stop["sec"] // 60
-            return str(minute) + "分", ft.Colors.RED_500 if minute < 3 else ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), ft.Colors.WHITE if minute < 3 else ft.Colors.PRIMARY
+            second_str = "\n" + str(stop["sec"] % 60) + "秒" if config("always_show_second") else ""
+            return str(minute) + "分" + second_str, ft.Colors.RED_500 if minute < 3 else ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), ft.Colors.WHITE if minute < 3 else ft.Colors.PRIMARY
 
 def read_favorites():
     try:

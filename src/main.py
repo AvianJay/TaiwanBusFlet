@@ -9,7 +9,7 @@ import threading
 
 def main(page: ft.Page):
     page.title = "TaiwanBus"
-    page.adaptive = True
+    # page.adaptive = True
 
     home_view = ft.View("/")
     home_view.appbar = ft.AppBar(
@@ -43,20 +43,26 @@ def main(page: ft.Page):
             favorites[name].append({"routekey": routekey, "pathid": pathid, "stopid": stopid})
             config.favorite_stop(name, "s", favorites[name])
             page.close(adddialog)
-        tf = ft.Column([ ft.TextButton(n, on_click=lambda e: af_on_click(n)) for n in favorites.keys() ])
+        tf = ft.Column([ ft.ListTile(title=ft.Text(n), on_click=lambda e: af_on_click(n)) for n in favorites.keys() ], expand_loose=True)
         adddialog = ft.AlertDialog(
                 title=ft.Text("新增至我的最愛..."),
                 content=tf,
+                actions=[
+                    ft.TextButton("新增最愛群組", on_click=favorite_add),
+                ]
             )
         page.open(adddialog)
 
     def stop_on_click(routekey, pathid, stopid, stopname):
         tf = ft.Column([
-            ft.TextButton("新增至我的最愛", on_click=lambda e: add_to_favorite(routekey, pathid, stopid))
-        ])
+            ft.ListTile(title=ft.Text("新增至我的最愛"), on_click=lambda e: add_to_favorite(routekey, pathid, stopid))
+        ], expand_loose=True)
         stopdialog = ft.AlertDialog(
                 title=ft.Text(stopname),
                 content=tf,
+                actions=[
+                    ft.TextButton("取消", on_click=lambda e: page.close(stopdialog)),
+                ]
             )
         page.open(stopdialog)
 
@@ -154,7 +160,8 @@ def main(page: ft.Page):
         while page.route == current_route:
             try:
                 bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus["routekey"]))
-            except:
+            except Exception as e:
+                print("Error:", str(e))
                 bus_timer_pb.color = ft.Colors.RED_800
                 bus_timer_text.color = ft.Colors.RED_800
                 bus_timer_text.value = "更新錯誤！"
@@ -165,7 +172,8 @@ def main(page: ft.Page):
                         break
                     try:
                         bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus["routekey"]))
-                    except:
+                    except Exception as e:
+                        print("Error:", str(e))
                         tried += 1
                         bus_timer_text.value = f"更新錯誤！ 嘗試第 {tried} 次"
                         page.update()
@@ -205,11 +213,11 @@ def main(page: ft.Page):
     def favorite_group_clicked(e):
         def on_group_delete_clicked(ee):
             page.close(deletedialog)
-            config.favorite_stop(favorite_name=e.control.text, mode="d")
+            config.favorite_stop(favorite_name=e.control.title.value, mode="d")
             page.go("/favorites/manage")
         deletedialog = ft.AlertDialog(
                 title=ft.Text("確定刪除？"),
-                content=ft.Text(f"您確定要刪除 {e.control.text} ？"),
+                content=ft.Text(f"您確定要刪除 {e.control.title.value} ？"),
                 actions=[
                     ft.TextButton("算了", on_click=lambda e: page.close(deletedialog)),
                     ft.TextButton("好啊", on_click=on_group_delete_clicked),
@@ -275,19 +283,24 @@ def main(page: ft.Page):
                     tbs = []
                     for id in favorites[k]:
                         stops[id['stopid']] = id
+                        route_info = asyncio.run(taiwanbus.fetch_route(id['routekey']))[0]
+                        route_stops = asyncio.run(taiwanbus.fetch_stops_by_route(id['routekey']))
+                        for s in route_stops:
+                            if str(s['stop_id']) == str(id['stopid']):
+                                stops[id['stopid']]['stopinfo'] = s
                         tbs.append(
                             ft.TextButton(
                                     content=ft.Row(
                                         [
                                             ft.Container(
-                                                content=ft.Text("Yee"),
+                                                content=ft.Text(route_info["route_name"]),
                                                 width=50,
                                                 height=50,
                                                 alignment=ft.alignment.center,
                                                 bgcolor=ft.Colors.GREY_200,
                                                 border_radius=30,
                                             ),
-                                            ft.Text(id),
+                                            ft.Text(stops[id['stopid']]['stopinfo']['stop_name']),
                                         ]
                                     ),
                                     key=str(id['stopid']),
@@ -341,7 +354,7 @@ def main(page: ft.Page):
             )
         if page.route == "/favorites/manage":
             favorites = config.favorite_stop()
-            favorite_groups = [ft.TextButton(text=fav, on_click=favorite_group_clicked) for fav in favorites.keys()]
+            favorite_groups = [ft.ListTile(title=ft.Text(fav), on_click=favorite_group_clicked) for fav in favorites.keys()]
             page.views.append(
                 ft.View(
                     "/favorites/manage",
@@ -381,23 +394,28 @@ def main(page: ft.Page):
                             ft.Text("台灣: 有全台灣的公車資料，但是沒有站點資料，取得公車資訊時消耗較多流量\n" \
                                 "台中, 台北: 僅有台中和台北的公車資料，且有站點資料，取得公車資訊時消耗較少流量"
                                 , size=10, color=ft.Colors.GREY_500),
+                            # always show second
+                            ft.Switch(label="總是顯示秒數",
+                                on_change=lambda e: config.config("always_show_second", e.control.value, "w"),
+                                 value=config.config("always_show_second"),
+                            ),
                             # bus update time
                             ft.Text("公車更新頻率"),
                             ft.Slider(
-                                min=1,
+                                min=0,
                                 max=60,
                                 label="{value} 秒",
-                                divisions=59,
+                                divisions=60,
                                 value=config.config("bus_update_time"),
                                 on_change=lambda e: config.config("bus_update_time", int(e.control.value), "w"),
                             ),
                             # error time
                             ft.Text("更新錯誤時的重試間隔"),
                             ft.Slider(
-                                min=1,
+                                min=0,
                                 max=60,
                                 label="{value} 秒",
-                                divisions=59,
+                                divisions=60,
                                 value=config.config("bus_error_update_time"),
                                 on_change=lambda e: config.config("bus_error_update_time", int(e.control.value), "w"),
                             ),
