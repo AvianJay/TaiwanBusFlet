@@ -201,8 +201,8 @@ def main(page: ft.Page):
                 bus_timer_text.value = f"{timer - i} 秒後更新"
                 page.update()
             bus_timer_pb.value = None
+            bus_timer_text.value = "正在更新"
             page.update()
-            # time.sleep(10)  # Simulate a delay for the bus update
             print("Bus info updated")
 
     def search_select(e):
