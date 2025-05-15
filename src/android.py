@@ -1,7 +1,7 @@
 from jnius import autoclass, cast
 import multiplatform
 
-def get_network_type():
+def get_network_status():
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
     Context = autoclass('android.content.Context')
     activity = PythonActivity.mActivity
@@ -18,7 +18,7 @@ def get_network_type():
         capabilities = connectivity_service.getNetworkCapabilities(network)
 
         if capabilities is None:
-            return multiplatform.FAILED
+            return multiplatform.NO_NETWORK
         elif capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI):
             return multiplatform.WIFI
         elif capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR):

@@ -40,3 +40,13 @@ package-mode = false
 
 [tool.poetry.group.dev.dependencies]
 flet = {extras = ["all"], version = "0.27.6"}
+
+[tool.flet.android]
+dependencies = [
+  "pyjnius"
+]
+
+[tool.flet.ios]
+dependencies = [
+  "pyobjus"
+]
