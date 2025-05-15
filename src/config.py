@@ -6,7 +6,7 @@ import flet as ft
 
 # info
 app_version = "0.0.1"
-config_version = 3
+config_version = 4
 # taiwanbus_version = version("taiwanbus")
 # No package metadata when complied
 # taiwanbus.__version__ will be added in 0.1.0
@@ -28,6 +28,7 @@ default_config = {
     "bus_update_time": 10,
     "bus_error_update_time": 1,
     "always_show_second": False,
+    "auto_update": "checkonly", # checkonly
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None
