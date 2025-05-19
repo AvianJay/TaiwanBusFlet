@@ -28,7 +28,7 @@ default_config = {
     "bus_update_time": 10,
     "bus_error_update_time": 1,
     "always_show_second": False,
-    "auto_update": "checkonly", # checkonly
+    "auto_update": "checkonly", # no, checkonly, all, wifi, cellular
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None

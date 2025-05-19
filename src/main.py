@@ -509,6 +509,9 @@ def main(page: ft.Page):
     page.go(page.route)
     home_show_page(0)
 
+    async def update_database_async():
+        await asyncio.to_thread(taiwanbus.update_database)
+
     def on_update_click(e):
         print("Clicked update button")
         page.close(upddlg)
@@ -519,9 +522,6 @@ def main(page: ft.Page):
         )
         page.open(updating_dialog)
         page.update()
-
-        async def update_database_async():
-            await asyncio.to_thread(taiwanbus.update_database)
 
         asyncio.run(update_database_async())
         page.close(updating_dialog)

@@ -15,4 +15,7 @@ UNKNOWN = "UNKNOWN"
 OTHER = "OTHER"
 
 def get_network_status():
-    return current.get_network_status()
+    if current:
+        return current.get_network_status()
+    else:
+        return UNKNOWN
