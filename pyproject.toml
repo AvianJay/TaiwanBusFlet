@@ -45,8 +45,3 @@ flet = {extras = ["all"], version = "0.27.6"}
 dependencies = [
   "pyjnius"
 ]
-
-[tool.flet.ios]
-dependencies = [
-  "pyobjus"
-]
