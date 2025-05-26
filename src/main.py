@@ -151,6 +151,7 @@ def main(page: ft.Page):
                     animation_duration=300,
                     tabs=tabs,
                     expand=1,
+                    tab_alignment=ft.TabAlignment.CENTER,
                 )
             )
         current_route = page.route
@@ -358,11 +359,13 @@ def main(page: ft.Page):
                     animation_duration=300,
                     tabs=tabs,
                     expand=1,
+                    tab_alignment=ft.TabAlignment.CENTER,
                 )
             else:
                 t = ft.Tabs(
                     selected_index=1,
                     animation_duration=300,
+                    tab_alignment=ft.TabAlignment.CENTER,
                     tabs=[
                         ft.Tab(
                             text="WIP",
@@ -561,7 +564,17 @@ def main(page: ft.Page):
                 ),
             )
         elif index == 1:
-            home_view.controls.append(ft.Container(content=ft.Text("¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯\n空空如也", text_align=ft.TextAlign.CENTER, size=30)))
+            home_view.controls.append(
+                ft.Container(
+                    expand=True,
+                    content=ft.Text(
+                            "¯\\_(ツ)_/¯\n空空如也",
+                            text_align=ft.TextAlign.CENTER,
+                            size=30
+                        ),
+                    alignment=ft.alignment.center,
+                )
+            )
         page.update()
 
     # 設定 NavigationBar 並處理切換事件
