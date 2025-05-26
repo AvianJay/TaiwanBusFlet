@@ -275,6 +275,35 @@ def main(page: ft.Page):
             page.views.append(bus_view)
             threading.Thread(target=bus_start_update, daemon=True).start()
         if page.route.startswith("/favorites"):
+            def handle_dlg_action_clicked(e):
+                page.close(dlg)
+                dlg.data.confirm_dismiss(e.control.data)
+
+            dlg = ft.AlertDialog(
+                modal=True,
+                title=ft.Text("請確認"),
+                content=ft.Text("你確定要刪除這個最愛站點嗎？"),
+                actions=[
+                    ft.TextButton("好啊", data=True, on_click=handle_dlg_action_clicked),
+                    ft.TextButton("算了", data=False, on_click=handle_dlg_action_clicked),
+                ],
+                actions_alignment=ft.MainAxisAlignment.END,
+            )
+
+            def handle_confirm_dismiss(e: ft.DismissibleDismissEvent):
+                if e.direction == ft.DismissDirection.END_TO_START:  # right-to-left slide
+                    # save current dismissible to dialog's data, for confirmation in handle_dlg_action_clicked
+                    dlg.data = e.control
+                    page.open(dlg)
+            
+            def handle_dismiss(e):
+                config.favorite_stop(favorite_name=e.control.parent.parent.text, mode="d", data=stops[e.control.content.key])
+                page.open(ft.SnackBar(
+                    content=ft.Text(f"已刪除最愛站牌 {e.control.content.key}"),
+                    action="確定",
+                ))
+                e.control.parent.controls.remove(e.control)
+                page.update()
             favorites = config.favorite_stop()
             if favorites:
                 tabs = []
@@ -289,30 +318,38 @@ def main(page: ft.Page):
                             if str(s['stop_id']) == str(id['stopid']):
                                 stops[id['stopid']]['stopinfo'] = s
                         tbs.append(
-                            ft.TextButton(
-                                    content=ft.Row(
-                                        [
-                                            ft.Container(
-                                                content=ft.Text(route_info["route_name"]),
-                                                width=50,
-                                                height=50,
-                                                alignment=ft.alignment.center,
-                                                bgcolor=ft.Colors.GREY_200,
-                                                border_radius=30,
-                                            ),
-                                            ft.Text(stops[id['stopid']]['stopinfo']['stop_name']),
-                                        ]
+                            ft.Dismissible(
+                                content=ft.TextButton(
+                                        content=ft.Row(
+                                            [
+                                                ft.Container(
+                                                    content=ft.Text(route_info["route_name"]),
+                                                    width=50,
+                                                    height=50,
+                                                    alignment=ft.alignment.center,
+                                                    bgcolor=ft.Colors.GREY_200,
+                                                    border_radius=30,
+                                                ),
+                                                ft.Text(stops[id['stopid']]['stopinfo']['stop_name']),
+                                            ]
+                                        ),
+                                        key=str(id['stopid']),
+                                        on_click=lambda e: page.go(f"/viewbus/{stops[e.control.key]['routekey']}/{stops[e.control.key]['pathid']}/{stops[e.control.key]['stopid']}"),
                                     ),
-                                    key=str(id['stopid']),
-                                    on_click=lambda e: page.go(f"/viewbus/{stops[e.control.key]['routekey']}/{stops[e.control.key]['pathid']}/{stops[e.control.key]['stopid']}")
+                                    dismiss_direction=ft.DismissDirection.END_TO_START,
+                                    secondary_background=ft.Container(bgcolor=ft.Colors.RED),
+                                    on_dismiss=handle_dismiss,
+                                    on_confirm_dismiss=handle_confirm_dismiss,
+                                    dismiss_thresholds={
+                                        ft.DismissDirection.END_TO_START: 0.2,
+                                    },
                                 )
                         )
                     tt = ft.Tab(
                         text=k,
-                        content=ft.Column(
+                        content=ft.ListView(
                             tbs,
-                            alignment=ft.MainAxisAlignment.START,
-                            scroll = ft.ScrollMode.AUTO,
+                            spacing=10,
                         )
                     )
                     tabs.append(tt)
@@ -353,8 +390,51 @@ def main(page: ft.Page):
                 )
             )
         if page.route == "/favorites/manage":
+            def handle_dlg_action_clicked(e):
+                page.close(dlg)
+                dlg.data.confirm_dismiss(e.control.data)
+
+            dlg = ft.AlertDialog(
+                modal=True,
+                title=ft.Text("請確認"),
+                content=ft.Text("你確定要刪除這個最愛群組嗎？"),
+                actions=[
+                    ft.TextButton("好啊", data=True, on_click=handle_dlg_action_clicked),
+                    ft.TextButton("算了", data=False, on_click=handle_dlg_action_clicked),
+                ],
+                actions_alignment=ft.MainAxisAlignment.END,
+            )
+
+            def handle_confirm_dismiss(e: ft.DismissibleDismissEvent):
+                if e.direction == ft.DismissDirection.END_TO_START:  # right-to-left slide
+                    # save current dismissible to dialog's data, for confirmation in handle_dlg_action_clicked
+                    dlg.data = e.control
+                    page.open(dlg)
+            
+            def handle_dismiss(e):
+                config.favorite_stop(favorite_name=e.control.content.title.value, mode="d")
+                page.open(ft.SnackBar(
+                    content=ft.Text(f"已刪除最愛群組 {e.control.content.title.value}"),
+                    action="確定",
+                ))
+                e.control.parent.controls.remove(e.control)
+                page.update()
+
             favorites = config.favorite_stop()
-            favorite_groups = [ft.ListTile(title=ft.Text(fav), on_click=favorite_group_clicked) for fav in favorites.keys()]
+            favorite_groups = [
+                ft.Dismissible(
+                    content=ft.ListTile(title=ft.Text(fav),
+                                        on_click=favorite_group_clicked
+                                        ),
+                    dismiss_direction=ft.DismissDirection.END_TO_START,
+                    secondary_background=ft.Container(bgcolor=ft.Colors.RED),
+                    on_dismiss=handle_dismiss,
+                    on_confirm_dismiss=handle_confirm_dismiss,
+                    dismiss_thresholds={
+                        ft.DismissDirection.END_TO_START: 0.2,
+                    },
+                    ) for fav in favorites.keys()
+                ]
             page.views.append(
                 ft.View(
                     "/favorites/manage",
@@ -481,7 +561,7 @@ def main(page: ft.Page):
                 ),
             )
         elif index == 1:
-            home_view.controls.append(ft.Text("¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯\n空空如也", text_align=ft.TextAlign.CENTER, size=30))
+            home_view.controls.append(ft.Container(content=ft.Text("¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯\n空空如也", text_align=ft.TextAlign.CENTER, size=30)))
         page.update()
 
     # 設定 NavigationBar 並處理切換事件

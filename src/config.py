@@ -113,9 +113,13 @@ def favorite_stop(favorite_name=None, mode="r", data=None):
             current_favorite = json.load(f)
             if data:
                 current_favorite_with_name = current_favorite.get(favorite_name, [])
-                if data in current_favorite_with_name:
-                    current_favorite_with_name.remove(data)
-                else:
+                ran = False
+                for item in current_favorite_with_name:
+                    if item.get("stopid") == data.get("stopid"):
+                        current_favorite_with_name.remove(item)
+                        ran = True
+                        break
+                if not ran:
                     raise ValueError(f"Data '{data}' not found in the favorite list.")
                 current_favorite[favorite_name] = current_favorite_with_name
             else:
