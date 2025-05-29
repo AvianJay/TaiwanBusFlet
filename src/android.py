@@ -1,7 +1,9 @@
 from jnius import autoclass, cast
-from multiplatform import NetworkStatus
+# from multiplatform import NetworkStatus
+# fix circular import issue
 
 def get_network_status():
+    from multiplatform import NetworkStatus
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
     Context = autoclass('android.content.Context')
     activity = PythonActivity.mActivity
