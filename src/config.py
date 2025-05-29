@@ -30,7 +30,7 @@ default_config = {
     "bus_update_time": 10,
     "bus_error_update_time": 1,
     "always_show_second": False,
-    "auto_update": "checkonly", # no, checkonly, all, wifi, cellular
+    "auto_update": "check_popup", # no, check_popup, check_notify, all, wifi, cellular
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None
@@ -39,6 +39,16 @@ try:
     if os.path.exists(config_path):
         _config = json.load(open(config_path, "r"))
         # Todo: verify
+        if not isinstance(_config, dict):
+            print("Config file is not a valid JSON object, resetting to default config.")
+            _config = default_config.copy()
+        for key in _config.keys():
+            if not isinstance(_config[key], type(default_config[key])):
+                print(f"Config key '{key}' has an invalid type, resetting to default value.")
+                _config[key] = default_config[key]
+        if "config_version" not in _config:
+            print("Config file does not have 'config_version', resetting to default config.")
+            _config = default_config.copy()
     else:
         _config = default_config.copy()
         json.dump(_config, open(config_path, "w"))

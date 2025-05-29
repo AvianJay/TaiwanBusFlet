@@ -5,6 +5,7 @@ import config
 import time
 import threading
 import flet_geolocator as fg
+import multiplatform
 
 # Todo: 弄成多個檔案
 
@@ -232,7 +233,8 @@ def main(page: ft.Page):
         def on_group_add_clicked(ee):
             page.close(adddialog)
             config.favorite_stop(favorite_name=tf.value, mode="s", data=[])
-            page.go("/favorites/manage")
+            if e.control.data:
+                e.control.data()
             page.update()
         adddialog = ft.AlertDialog(
                 title=ft.Text("新增群組"),
@@ -363,19 +365,14 @@ def main(page: ft.Page):
                     tab_alignment=ft.TabAlignment.CENTER,
                 )
             else:
-                t = ft.Tabs(
-                    selected_index=1,
-                    animation_duration=300,
-                    tab_alignment=ft.TabAlignment.CENTER,
-                    tabs=[
-                        ft.Tab(
-                            text="WIP",
-                            content=ft.Container(
-                                content=ft.Text("WORK IN PROGRESS"),
-                            ),
-                        )
-                    ],
-                    expand=1,
+                t = ft.Container(
+                    expand=True,
+                    content=ft.Text(
+                        "¯\\_(ツ)_/¯\n空空如也",
+                        text_align=ft.TextAlign.CENTER,
+                        size=30
+                    ),
+                    alignment=ft.alignment.center,
                 )
             page.views.append(
                 ft.View(
@@ -439,6 +436,22 @@ def main(page: ft.Page):
                     },
                     ) for fav in favorites.keys()
                 ]
+            def update_favorite_groups():
+                nonlocal favorite_groups
+                favorite_groups = [
+                    ft.Dismissible(
+                        content=ft.ListTile(title=ft.Text(fav),
+                                            on_click=favorite_group_clicked
+                                            ),
+                        dismiss_direction=ft.DismissDirection.END_TO_START,
+                        secondary_background=ft.Container(bgcolor=ft.Colors.RED),
+                        on_dismiss=handle_dismiss,
+                        on_confirm_dismiss=handle_confirm_dismiss,
+                        dismiss_thresholds={
+                            ft.DismissDirection.END_TO_START: 0.2,
+                        },
+                    ) for fav in config.favorite_stop().keys()
+                ]
             page.views.append(
                 ft.View(
                     "/favorites/manage",
@@ -448,7 +461,7 @@ def main(page: ft.Page):
                             title=ft.Text("管理最愛群組"),
                             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
                             actions=[
-                                ft.IconButton(ft.Icons.ADD, on_click=favorite_add),
+                                ft.IconButton(ft.Icons.ADD, on_click=favorite_add, data=update_favorite_groups),
                             ],
                         ),
                         ft.Column(favorite_groups),
@@ -502,6 +515,21 @@ def main(page: ft.Page):
                                 divisions=60,
                                 value=config.config("bus_error_update_time"),
                                 on_change=lambda e: config.config("bus_error_update_time", int(e.control.value), "w"),
+                            ),
+                            # auto update
+                            ft.Text("自動更新資料庫"),
+                            ft.Dropdown(
+                                label="自動更新方式",
+                                options=[
+                                    ft.DropdownOption(key="no", content=ft.Text("不自動更新")),
+                                    ft.DropdownOption(key="check_popup", content=ft.Text("檢查更新並彈出提示")),
+                                    ft.DropdownOption(key="check_notify", content=ft.Text("檢查更新並通知")),
+                                    ft.DropdownOption(key="all", content=ft.Text("自動更新")),
+                                    ft.DropdownOption(key="wifi", content=ft.Text("僅在 Wi-Fi 下自動更新")),
+                                    ft.DropdownOption(key="cellular", content=ft.Text("僅在行動網路下自動更新")),
+                                ],
+                                on_change=lambda e: config.config("auto_update", e.control.value, "w"),
+                                value=config.config("auto_update"),
                             ),
                             # app info
                             ft.Text("版本資訊"),
@@ -627,22 +655,82 @@ def main(page: ft.Page):
         page.update()
 
     # check database update
-    updates = taiwanbus.check_database_update()
-    if any(updates.values()):
-        update_message = ""
-        for key, value in updates.items():
-            if value:
-                update_message += f"{key}: {value}\n"
-        upddlg = ft.AlertDialog(
-            title=ft.Text("資料庫需要更新"),
-            content=ft.Text(update_message),
-            actions=[
-                ft.TextButton("下次再說", on_click=lambda e: page.close(upddlg)),
-                ft.TextButton("更新", on_click=on_update_click),
-            ],
-        )
-        page.open(upddlg)
-        page.update()
+    should_update = config.config("auto_update")
+    if should_update not in ["no", "check_popup", "check_notify", "all", "wifi", "cellular"]:
+        should_update = "check_popup"
+        config.config("auto_update", should_update, "w")
+    if should_update == "check_popup":
+        updates = taiwanbus.check_database_update()
+        if any(updates.values()):
+            update_message = ""
+            for key, value in updates.items():
+                if value:
+                    update_message += f"{key}: {value}\n"
+            upddlg = ft.AlertDialog(
+                title=ft.Text("資料庫需要更新"),
+                content=ft.Text(update_message),
+                actions=[
+                    ft.TextButton("下次再說", on_click=lambda e: page.close(upddlg)),
+                    ft.TextButton("更新", on_click=on_update_click),
+                ],
+            )
+            page.open(upddlg)
+            page.update()
+    elif should_update == "check_notify":
+        updates = taiwanbus.check_database_update()
+        if any(updates.values()):
+            update_message = ""
+            for key, value in updates.items():
+                if value:
+                    update_message += f"{key}: {value}\n"
+            updated_snackbar = ft.SnackBar(
+                content=ft.Text(update_message),
+                action="更新",
+                on_action=lambda e: on_update_click(e),
+            )
+            page.open(updated_snackbar)
+            page.update()
+    elif should_update == "all":
+        updates = taiwanbus.check_database_update()
+        if any(updates.values()):
+            update_message = "正在更新資料庫..."
+            updateing_snackbar = ft.SnackBar(
+                content=ft.Text(update_message),
+            )
+            page.open(updateing_snackbar)
+            page.update()
+        asyncio.run(update_database_async())
+    elif should_update in ["wifi", "cellular"]:
+        network_status = multiplatform.get_network_status()
+        print("Network status:", network_status)
+        if (should_update == "wifi" and network_status == multiplatform.NetworkStatus.WIFI) or \
+           (should_update == "cellular" and network_status == multiplatform.NetworkStatus.CELLULAR):
+            updates = taiwanbus.check_database_update()
+            if any(updates.values()):
+                update_message = "正在更新資料庫..."
+                updateing_snackbar = ft.SnackBar(
+                    content=ft.Text(update_message),
+                )
+                page.open(updateing_snackbar)
+                page.update()
+            asyncio.run(update_database_async())
+        else:
+            network_message = None
+            if network_status == multiplatform.NetworkStatus.UNKNOWN:
+                network_message = "無法獲取網路狀態，無法自動更新資料庫。"
+            elif network_status == multiplatform.NetworkStatus.NO_NETWORK:
+                network_message = "無網路連線，無法自動更新資料庫。"
+            elif network_status == multiplatform.NetworkStatus.FAILED:
+                network_message = "獲取網路狀態失敗，無法自動更新資料庫。"
+            elif network_status == multiplatform.NetworkStatus.OTHER:
+                network_message = "未知的網路狀態，無法自動更新資料庫。"
+            if network_message:
+                network_snackbar = ft.SnackBar(
+                    content=ft.Text(network_message),
+                    action="確定",
+                )
+                page.open(network_snackbar)
+                page.update()
 
 
 ft.app(main)
