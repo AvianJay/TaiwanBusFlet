@@ -2,6 +2,8 @@ import os
 import json
 import taiwanbus
 import flet as ft
+import flet_geolocator as fg
+import threading
 # from importlib.metadata import version
 
 # info
@@ -135,3 +137,41 @@ def favorite_stop(favorite_name=None, mode="r", data=None):
 
 if not os.path.exists(os.path.join(datadir, "favorite.json")):
     json.dump({}, open(os.path.join(datadir, "favorite.json"), "w"))
+
+position_change_events = []
+
+def handle_position_change(e):
+    print("Position changed:", e)
+    for event in position_change_events:
+        try:
+            event(e)
+        except Exception as ex:
+            print("Error in position change event:", ex)
+
+gl = fg.Geolocator(
+        location_settings=fg.GeolocatorSettings(
+            accuracy=fg.GeolocatorPositionAccuracy.LOW
+        ),
+        on_position_change=handle_position_change,
+        on_error=lambda e: print("Geolocator error:", e),
+    )
+
+def location_permission(request=True):
+    if request:
+        gl.request_permission(wait_timeout=60)
+    return gl.get_permission_status()
+
+def get_location(force=False):
+    if location_permission() != fg.GeolocatorPermissionStatus.ALWAYS or fg.GeolocatorPermissionStatus.WHEN_IN_USE:
+        print("Location permission not granted.")
+        return None
+    try:
+        if force:
+            return gl.get_current_position()
+        else:
+            threading.Thread(target=gl.get_current_position, daemon=True).start()
+            return gl.get_last_known_position()
+    except Exception as e:
+        print("Error getting location:", e)
+        return None
+
