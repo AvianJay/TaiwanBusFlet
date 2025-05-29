@@ -1,4 +1,4 @@
-import multiplatform
+from multiplatform import NetworkStatus
 
 def get_network_status():
-    return multiplatform.UNKNOWN
+    return NetworkStatus.UNKNOWN
