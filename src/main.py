@@ -6,6 +6,8 @@ import time
 import threading
 import flet_geolocator as fg
 import multiplatform
+import os
+import json
 
 # Todo: 弄成多個檔案
 
@@ -525,8 +527,13 @@ def main(page: ft.Page):
                                     ft.DropdownOption(key="check_popup", content=ft.Text("檢查更新並彈出提示")),
                                     ft.DropdownOption(key="check_notify", content=ft.Text("檢查更新並通知")),
                                     ft.DropdownOption(key="all", content=ft.Text("自動更新")),
-                                    ft.DropdownOption(key="wifi", content=ft.Text("僅在 Wi-Fi 下自動更新")),
-                                    ft.DropdownOption(key="cellular", content=ft.Text("僅在行動網路下自動更新")),
+                                    *(
+                                        [
+                                            ft.DropdownOption(key="wifi", content=ft.Text("僅在 Wi-Fi 下自動更新")),
+                                            ft.DropdownOption(key="cellular", content=ft.Text("僅在行動網路下自動更新")),
+                                        ]
+                                        if config.platform == "android" else []
+                                    ),
                                 ],
                                 on_change=lambda e: config.config("auto_update", e.control.value, "w"),
                                 value=config.config("auto_update"),
@@ -537,8 +544,16 @@ def main(page: ft.Page):
                                     f"Config: {config.config_version}\n"
                                     f"TaiwanBus: {config.taiwanbus_version}"
                                     ),
+                            # debug info
+                            ft.Text("除錯資訊"),
+                            ft.Text(f"Platform: {config.platform}\n"
+                                    f"Provider: {config.config('provider')}\n"
+                                    # f"Database: {str(json.load(open(os.path.join(config.datadir, ".taiwanbus", "version.json"), 'r', encoding='utf-8')).values()[0])}\n"
+                                    f"Network Status: {multiplatform.get_network_status().value}"
+                                    ),
                         ]),
                     ],
+                    scroll=ft.ScrollMode.AUTO,
                 )
             )
         page.update()
