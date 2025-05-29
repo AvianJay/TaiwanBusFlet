@@ -10,7 +10,7 @@ authors = [
 dependencies = [
   "flet==0.27.6",
   "taiwanbus==0.0.9",
-  "flet-geolocator==0.1.0"
+  "flet-geolocator==0.1.0",
 ]
 
 [tool.flet]
