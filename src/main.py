@@ -4,6 +4,7 @@ import asyncio
 import config
 import time
 import threading
+import flet_geolocator as fg
 
 # Todo: 弄成多個檔案
 
