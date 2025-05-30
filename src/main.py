@@ -527,13 +527,13 @@ def main(page: ft.Page):
                                     ft.DropdownOption(key="check_popup", content=ft.Text("檢查更新並彈出提示")),
                                     ft.DropdownOption(key="check_notify", content=ft.Text("檢查更新並通知")),
                                     ft.DropdownOption(key="all", content=ft.Text("自動更新")),
-                                    # *(
-                                    #     [
-                                    #         ft.DropdownOption(key="wifi", content=ft.Text("僅在 Wi-Fi 下自動更新")),
-                                    #         ft.DropdownOption(key="cellular", content=ft.Text("僅在行動網路下自動更新")),
-                                    #     ]
-                                    #     if config.platform == "android" else []
-                                    # ),
+                                    *(
+                                        [
+                                            ft.DropdownOption(key="wifi", content=ft.Text("僅在 Wi-Fi 下自動更新")),
+                                            ft.DropdownOption(key="cellular", content=ft.Text("僅在行動網路下自動更新")),
+                                        ]
+                                        if config.platform == "android" else []
+                                    ),
                                 ],
                                 on_change=lambda e: config.config("auto_update", e.control.value, "w"),
                                 value=config.config("auto_update"),
