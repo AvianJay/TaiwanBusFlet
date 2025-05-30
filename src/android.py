@@ -21,16 +21,16 @@ def get_network_status():
     Version = autoclass('android.os.Build$VERSION')
 
     if Version.SDK_INT >= 23:
-        network = connectivity_service.getActiveNetwork()
+        network = connectivity_service.getActiveNetworkInfo()
         if network is None:
             return NetworkStatus.NO_NETWORK
-        capabilities = connectivity_service.getNetworkCapabilities(network)
+        capabilities = network.getType()
 
         if capabilities is None:
             return NetworkStatus.FAILED
-        elif capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI):
+        elif capabilities == ConnectivityManager.TYPE_WIFI:
             return NetworkStatus.WIFI
-        elif capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR):
+        elif capabilities == ConnectivityManager.TYPE_MOBILE:
             return NetworkStatus.CELLULAR
         else:
             return NetworkStatus.OTHER
