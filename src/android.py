@@ -18,8 +18,9 @@ def get_network_status():
     ConnectivityManager = autoclass('android.net.ConnectivityManager')
     NetworkCapabilities = autoclass('android.net.NetworkCapabilities')
     Build = autoclass('android.os.Build')
+    Version = autoclass('android.os.Build$VERSION')
 
-    if Build.VERSION.SDK_INT >= 23:
+    if Version.SDK_INT >= 23:
         network = connectivity_service.getActiveNetwork()
         if network is None:
             return NetworkStatus.NO_NETWORK
