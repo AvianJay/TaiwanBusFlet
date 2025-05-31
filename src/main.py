@@ -651,7 +651,7 @@ def main(page: ft.Page):
 
     def on_update_click(e):
         print("Clicked update button")
-        page.close(upddlg)
+        page.close(e.control)
         updating_dialog = ft.AlertDialog(
             modal=True,
             title=ft.Text("正在更新"),
@@ -667,14 +667,11 @@ def main(page: ft.Page):
             action="確定",
         )
         page.open(updated_snackbar)
+        home_view.appbar.actions = [ft.IconButton(ft.Icons.SETTINGS, on_click=lambda e: page.go("/settings"))]
         page.update()
-
-    # check database update
-    should_update = config.config("auto_update")
-    if should_update not in ["no", "check_popup", "check_notify", "all", "wifi", "cellular"]:
-        should_update = "check_popup"
-        config.config("auto_update", should_update, "w")
-    if should_update == "check_popup":
+    
+    def open_update_dialog():
+        global home_view
         updates = taiwanbus.check_database_update()
         if any(updates.values()):
             update_message = ""
@@ -690,7 +687,22 @@ def main(page: ft.Page):
                 ],
             )
             page.open(upddlg)
+            home_view.appbar.actions.append(
+                ft.IconButton(
+                    ft.Icons.SYSTEM_UPDATE,
+                    on_click=open_update_dialog,
+                    tooltip="資料庫有新更新",
+                )
+            )
             page.update()
+
+    # check database update
+    should_update = config.config("auto_update")
+    if should_update not in ["no", "check_popup", "check_notify", "all", "wifi", "cellular"]:
+        should_update = "check_popup"
+        config.config("auto_update", should_update, "w")
+    if should_update == "check_popup":
+        open_update_dialog()
     elif should_update == "check_notify":
         updates = taiwanbus.check_database_update()
         if any(updates.values()):
@@ -698,9 +710,16 @@ def main(page: ft.Page):
             updated_snackbar = ft.SnackBar(
                 content=ft.Text(update_message),
                 action="更新",
-                on_action=lambda e: on_update_click(e),
+                on_action=on_update_click,
             )
             page.open(updated_snackbar)
+            # home_view.appbar.actions.append(
+            #     ft.IconButton(
+            #         ft.Icons.SYSTEM_UPDATE,
+            #         on_click=open_update_dialog,
+            #         tooltip="資料庫有新更新",
+            #     )
+            # )
             page.update()
     elif should_update == "all":
         updates = taiwanbus.check_database_update()
@@ -755,6 +774,16 @@ def main(page: ft.Page):
                 )
                 page.open(network_snackbar)
                 page.update()
-
+    elif should_update == "no":
+        updates = taiwanbus.check_database_update()
+        if any(updates.values()):
+            home_view.appbar.actions.append(
+                ft.IconButton(
+                    ft.Icons.SYSTEM_UPDATE,
+                    on_click=open_update_dialog,
+                    tooltip="資料庫有新更新",
+                )
+            )
+            page.update()
 
 ft.app(main)
