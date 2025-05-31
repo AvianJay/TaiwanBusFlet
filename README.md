@@ -1,5 +1,9 @@
 # TaiwanBusFlet
 
+## 下載最新成功構建的檔案
+[Android](https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-android.zip)
+[iOS](https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-ios.zip)
+
 ## Run the app
 
 ### uv
