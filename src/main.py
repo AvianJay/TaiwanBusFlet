@@ -694,10 +694,7 @@ def main(page: ft.Page):
     elif should_update == "check_notify":
         updates = taiwanbus.check_database_update()
         if any(updates.values()):
-            update_message = ""
-            for key, value in updates.items():
-                if value:
-                    update_message += f"{key}: {value}\n"
+            update_message = f"資料庫有新版本 {list(updates.values())[0]}"
             updated_snackbar = ft.SnackBar(
                 content=ft.Text(update_message),
                 action="更新",
@@ -714,7 +711,13 @@ def main(page: ft.Page):
             )
             page.open(updateing_snackbar)
             page.update()
-        asyncio.run(update_database_async())
+            asyncio.run(update_database_async())
+            updated_snackbar = ft.SnackBar(
+                content=ft.Text("資料庫已更新至最新版本"),
+                action="確定",
+            )
+            page.open(updated_snackbar)
+            page.update()
     elif should_update in ["wifi", "cellular"]:
         network_status = multiplatform.get_network_status()
         print("Network status:", network_status)
@@ -728,7 +731,13 @@ def main(page: ft.Page):
                 )
                 page.open(updateing_snackbar)
                 page.update()
-            asyncio.run(update_database_async())
+                asyncio.run(update_database_async())
+                updated_snackbar = ft.SnackBar(
+                    content=ft.Text("資料庫已更新至最新版本"),
+                    action="確定",
+                )
+                page.open(updated_snackbar)
+                page.update()
         else:
             network_message = None
             if network_status == multiplatform.NetworkStatus.UNKNOWN:
