@@ -1,6 +1,4 @@
 from jnius import autoclass, cast
-# from multiplatform import NetworkStatus
-# fix circular import issue
 import os
 
 def get_network_status():
@@ -21,17 +19,17 @@ def get_network_status():
     Version = autoclass('android.os.Build$VERSION')
     print("SDK Version:", str(Version.SDK_INT))
 
-    if True: # Version.SDK_INT >= 23:
-        network = connectivity_service.getActiveNetworkInfo()
+    if Version.SDK_INT >= 23:
+        network = connectivity_service.getActiveNetwork()
         if network is None:
             return NetworkStatus.NO_NETWORK
-        capabilities = network.getType()
+        capabilities = connectivity_service.getNetworkCapabilities(network)
 
         if capabilities is None:
             return NetworkStatus.FAILED
-        elif capabilities == ConnectivityManager.TYPE_WIFI:
+        elif capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI):
             return NetworkStatus.WIFI
-        elif capabilities == ConnectivityManager.TYPE_MOBILE:
+        elif capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR):
             return NetworkStatus.CELLULAR
         else:
             return NetworkStatus.OTHER

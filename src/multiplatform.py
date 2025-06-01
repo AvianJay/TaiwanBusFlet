@@ -19,6 +19,6 @@ class NetworkStatus(Enum):
 def get_network_status():
     if current:
         status = current.get_network_status()
-        return status  # if status in NetworkStatus._value2member_map_ else NetworkStatus.UNKNOWN
+        return status
     else:
         return NetworkStatus.UNKNOWN
