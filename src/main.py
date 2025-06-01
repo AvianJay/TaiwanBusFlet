@@ -477,7 +477,7 @@ def main(page: ft.Page):
                     [
                         ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.Column([
-                            ft.Text("這是設定頁面 WIP 哈哈"),
+                            # ft.Text("這是設定頁面 WIP 哈哈"),
                             # dropdown
                             ft.Dropdown(
                                 label="選擇資料庫",
@@ -665,7 +665,7 @@ def main(page: ft.Page):
     def home_show_page(index):
         home_view.controls.clear()  # 清空頁面內容
         if index == 0:
-            home_view.controls.append(ft.Text("這是主頁 哈哈"))
+            # home_view.controls.append(ft.Text("這是主頁 哈哈"))
             # btn = create_button(ft.Icons.HOME, "TEST", lambda e: None)
             # home_view.controls.append(btn)
             home_view.controls.append(
