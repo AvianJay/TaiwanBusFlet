@@ -630,7 +630,7 @@ def main(page: ft.Page):
                         ft.Column(
                             [
                                 ft.Text("資料庫更新設定", text_align="center"),
-                                ft.Text("你可以選擇自動更新資料庫，或是手動更新。", text_align="center", size=10, color=ft.Colors.GREY_500),
+                                ft.Text("你隨時可以在設定中更改。", text_align="center", size=10, color=ft.Colors.GREY_500),
                                 ft.Dropdown(
                                     label="自動更新方式",
                                     options=[
