@@ -8,7 +8,7 @@ import threading
 
 # info
 app_version = "0.0.1"
-config_version = 4
+config_version = 5
 # taiwanbus_version = version("taiwanbus")
 # No package metadata when complied
 # taiwanbus.__version__ will be added in 0.1.0
@@ -31,6 +31,7 @@ default_config = {
     "bus_error_update_time": 1,
     "always_show_second": False,
     "auto_update": "check_popup", # no, check_popup, check_notify, all, wifi, cellular
+    "firstrun": True,
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None

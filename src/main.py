@@ -556,6 +556,109 @@ def main(page: ft.Page):
                     scroll=ft.ScrollMode.AUTO,
                 )
             )
+        if page.route == "/firstrun":
+            page.views.append(
+                ft.View(
+                    "/firstrun",
+                    [
+                        ft.Column(
+                            [
+                                ft.Text("👋", size=40, text_align="center"),
+                                ft.Text("歡迎使用TaiwanBus！", text_align="center"),
+                                ft.TextButton("繼續", on_click=lambda e: page.go("/firstrun/provider")),
+                            ],
+                            alignment="center",
+                            horizontal_alignment="center",
+                        ),
+                    ],
+                    vertical_alignment="center",
+                    horizontal_alignment="center",
+                )
+            )
+        if page.route == "/firstrun/provider":
+            page.views.append(
+                ft.View(
+                    "/firstrun/provider",
+                    [
+                        ft.Column(
+                            [
+                                ft.Text("請先設定資料庫提供者。", text_align="center"),
+                                ft.Text("你隨時可以在設定中更改。", text_align="center", size=10, color=ft.Colors.GREY_500),
+                                ft.Dropdown(
+                                    label="選擇資料庫",
+                                    options=[
+                                        ft.DropdownOption(key="twn", content=ft.Text("台灣")),
+                                        ft.DropdownOption(key="tcc", content=ft.Text("台中")),
+                                        ft.DropdownOption(key="tpe", content=ft.Text("台北")),
+                                    ],
+                                    on_change=lambda e: config.config("provider", e.control.value, "w"),
+                                    value=config.config("provider"),
+                                ),
+                                ft.TextButton("繼續", on_click=lambda e: page.go("/firstrun/database")),
+                            ],
+                            alignment="center",
+                            horizontal_alignment="center",
+                        ),
+                    ],
+                    vertical_alignment="center",
+                    horizontal_alignment="center",
+                )
+            )
+        if page.route == "/firstrun/database":
+            def ask_cancel_update_button_clicked(e):
+                page.close(ask_dialog)
+                config.config("firstrun", False, "w")
+                page.go("/")
+            def ask_update_button_clicked(e):
+                on_update_click(e)
+                # page.close(ask_dialog)
+                config.config("firstrun", False, "w")
+                page.go("/")
+            ask_dialog = ft.AlertDialog(
+                title=ft.Text("資料庫更新"),
+                content=ft.Text("是否要立即更新資料庫？"),
+                actions=[
+                    ft.TextButton("不要", on_click=ask_cancel_update_button_clicked),
+                    ft.TextButton("好啊", on_click=ask_update_button_clicked),
+                ],
+                actions_alignment=ft.MainAxisAlignment.END,
+            )
+            page.views.append(
+                ft.View(
+                    "/firstrun/database",
+                    [
+                        ft.Column(
+                            [
+                                ft.Text("資料庫更新設定", text_align="center"),
+                                ft.Text("你可以選擇自動更新資料庫，或是手動更新。", text_align="center", size=10, color=ft.Colors.GREY_500),
+                                ft.Dropdown(
+                                    label="自動更新方式",
+                                    options=[
+                                        ft.DropdownOption(key="no", content=ft.Text("不自動更新")),
+                                        ft.DropdownOption(key="check_popup", content=ft.Text("檢查更新並彈出提示")),
+                                        ft.DropdownOption(key="check_notify", content=ft.Text("檢查更新並通知")),
+                                        ft.DropdownOption(key="all", content=ft.Text("自動更新")),
+                                        *(
+                                            [
+                                                ft.DropdownOption(key="wifi", content=ft.Text("僅在 Wi-Fi 下自動更新")),
+                                                ft.DropdownOption(key="cellular", content=ft.Text("僅在行動網路下自動更新")),
+                                            ]
+                                            if config.platform == "android" else []
+                                        ),
+                                    ],
+                                    on_change=lambda e: config.config("auto_update", e.control.value, "w"),
+                                    value=config.config("auto_update"),
+                                ),
+                                ft.TextButton("繼續", on_click=lambda e: page.open(ask_dialog)),
+                            ],
+                            alignment="center",
+                            horizontal_alignment="center",
+                        ),
+                    ],
+                    vertical_alignment="center",
+                    horizontal_alignment="center",
+                )
+            )
         page.update()
     
     # home page
@@ -642,7 +745,7 @@ def main(page: ft.Page):
         page.go(top_view.route)
 
     page.on_route_change = route_change
-    page.on_view_pop = view_pop
+    # page.on_view_pop = view_pop
     page.go(page.route)
     home_show_page(0)
 
@@ -651,7 +754,15 @@ def main(page: ft.Page):
 
     def on_update_click(e):
         print("Clicked update button")
-        page.close(e.control)
+        try:
+            page.close(e.control)
+        except Exception as ee:
+            print("Error closing control:", str(ee))
+            try:
+                page.close(e.control.content)
+            except Exception as eee:
+                print("Error closing control content:", str(eee))
+                pass
         updating_dialog = ft.AlertDialog(
             modal=True,
             title=ft.Text("正在更新"),
@@ -696,52 +807,35 @@ def main(page: ft.Page):
             # )
             page.update()
 
-    # check database update
-    should_update = config.config("auto_update")
-    if should_update not in ["no", "check_popup", "check_notify", "all", "wifi", "cellular"]:
-        should_update = "check_popup"
-        config.config("auto_update", should_update, "w")
-    if should_update == "check_popup":
-        open_update_dialog()
-    elif should_update == "check_notify":
-        updates = taiwanbus.check_database_update()
-        if any(updates.values()):
-            update_message = f"資料庫有新版本 {list(updates.values())[0]}"
-            updated_snackbar = ft.SnackBar(
-                content=ft.Text(update_message),
-                action="更新",
-                on_action=on_update_click,
-            )
-            page.open(updated_snackbar)
-            home_view.appbar.actions.append(
-                ft.IconButton(
-                    ft.Icons.SYSTEM_UPDATE,
-                    on_click=open_update_dialog,
-                    tooltip="資料庫有新更新",
+    if config.config("firstrun"):
+        page.go("/firstrun")
+    else:
+        # check database update
+        should_update = config.config("auto_update")
+        if should_update not in ["no", "check_popup", "check_notify", "all", "wifi", "cellular"]:
+            should_update = "check_popup"
+            config.config("auto_update", should_update, "w")
+        if should_update == "check_popup":
+            open_update_dialog()
+        elif should_update == "check_notify":
+            updates = taiwanbus.check_database_update()
+            if any(updates.values()):
+                update_message = f"資料庫有新版本 {list(updates.values())[0]}"
+                updated_snackbar = ft.SnackBar(
+                    content=ft.Text(update_message),
+                    action="更新",
+                    on_action=on_update_click,
                 )
-            )
-            page.update()
-    elif should_update == "all":
-        updates = taiwanbus.check_database_update()
-        if any(updates.values()):
-            update_message = "正在更新資料庫..."
-            updateing_snackbar = ft.SnackBar(
-                content=ft.Text(update_message),
-            )
-            page.open(updateing_snackbar)
-            page.update()
-            asyncio.run(update_database_async())
-            updated_snackbar = ft.SnackBar(
-                content=ft.Text("資料庫已更新至最新版本"),
-                action="確定",
-            )
-            page.open(updated_snackbar)
-            page.update()
-    elif should_update in ["wifi", "cellular"]:
-        network_status = multiplatform.get_network_status()
-        print("Network status:", network_status)
-        if (should_update == "wifi" and network_status == multiplatform.NetworkStatus.WIFI) or \
-           (should_update == "cellular" and network_status == multiplatform.NetworkStatus.CELLULAR):
+                page.open(updated_snackbar)
+                home_view.appbar.actions.append(
+                    ft.IconButton(
+                        ft.Icons.SYSTEM_UPDATE,
+                        on_click=open_update_dialog,
+                        tooltip="資料庫有新更新",
+                    )
+                )
+                page.update()
+        elif should_update == "all":
             updates = taiwanbus.check_database_update()
             if any(updates.values()):
                 update_message = "正在更新資料庫..."
@@ -757,33 +851,53 @@ def main(page: ft.Page):
                 )
                 page.open(updated_snackbar)
                 page.update()
-        else:
-            network_message = None
-            if network_status == multiplatform.NetworkStatus.UNKNOWN:
-                network_message = "無法獲取網路狀態，無法自動更新資料庫。"
-            elif network_status == multiplatform.NetworkStatus.NO_NETWORK:
-                network_message = "無網路連線，無法自動更新資料庫。"
-            elif network_status == multiplatform.NetworkStatus.FAILED:
-                network_message = "獲取網路狀態失敗，無法自動更新資料庫。"
-            elif network_status == multiplatform.NetworkStatus.OTHER:
-                network_message = "未知的網路狀態，無法自動更新資料庫。"
-            if network_message:
-                network_snackbar = ft.SnackBar(
-                    content=ft.Text(network_message),
-                    action="確定",
+        elif should_update in ["wifi", "cellular"]:
+            network_status = multiplatform.get_network_status()
+            print("Network status:", network_status)
+            if (should_update == "wifi" and network_status == multiplatform.NetworkStatus.WIFI) or \
+            (should_update == "cellular" and network_status == multiplatform.NetworkStatus.CELLULAR):
+                updates = taiwanbus.check_database_update()
+                if any(updates.values()):
+                    update_message = "正在更新資料庫..."
+                    updateing_snackbar = ft.SnackBar(
+                        content=ft.Text(update_message),
+                    )
+                    page.open(updateing_snackbar)
+                    page.update()
+                    asyncio.run(update_database_async())
+                    updated_snackbar = ft.SnackBar(
+                        content=ft.Text("資料庫已更新至最新版本"),
+                        action="確定",
+                    )
+                    page.open(updated_snackbar)
+                    page.update()
+            else:
+                network_message = None
+                if network_status == multiplatform.NetworkStatus.UNKNOWN:
+                    network_message = "無法獲取網路狀態，無法自動更新資料庫。"
+                elif network_status == multiplatform.NetworkStatus.NO_NETWORK:
+                    network_message = "無網路連線，無法自動更新資料庫。"
+                elif network_status == multiplatform.NetworkStatus.FAILED:
+                    network_message = "獲取網路狀態失敗，無法自動更新資料庫。"
+                elif network_status == multiplatform.NetworkStatus.OTHER:
+                    network_message = "未知的網路狀態，無法自動更新資料庫。"
+                if network_message:
+                    network_snackbar = ft.SnackBar(
+                        content=ft.Text(network_message),
+                        action="確定",
+                    )
+                    page.open(network_snackbar)
+                    page.update()
+        elif should_update == "no":
+            updates = taiwanbus.check_database_update()
+            if any(updates.values()):
+                home_view.appbar.actions.append(
+                    ft.IconButton(
+                        ft.Icons.SYSTEM_UPDATE,
+                        on_click=open_update_dialog,
+                        tooltip="資料庫有新更新",
+                    )
                 )
-                page.open(network_snackbar)
                 page.update()
-    elif should_update == "no":
-        updates = taiwanbus.check_database_update()
-        if any(updates.values()):
-            home_view.appbar.actions.append(
-                ft.IconButton(
-                    ft.Icons.SYSTEM_UPDATE,
-                    on_click=open_update_dialog,
-                    tooltip="資料庫有新更新",
-                )
-            )
-            page.update()
 
 ft.app(main)
