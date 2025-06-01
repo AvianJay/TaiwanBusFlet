@@ -670,7 +670,7 @@ def main(page: ft.Page):
         home_view.appbar.actions = [ft.IconButton(ft.Icons.SETTINGS, on_click=lambda e: page.go("/settings"))]
         page.update()
     
-    def open_update_dialog():
+    def open_update_dialog(e=None):
         nonlocal home_view
         updates = taiwanbus.check_database_update()
         if any(updates.values()):
@@ -687,13 +687,13 @@ def main(page: ft.Page):
                 ],
             )
             page.open(upddlg)
-            home_view.appbar.actions.append(
-                ft.IconButton(
-                    ft.Icons.SYSTEM_UPDATE,
-                    on_click=open_update_dialog,
-                    tooltip="資料庫有新更新",
-                )
-            )
+            # home_view.appbar.actions.append(
+            #     ft.IconButton(
+            #         ft.Icons.SYSTEM_UPDATE,
+            #         on_click=open_update_dialog,
+            #         tooltip="資料庫有新更新",
+            #     )
+            # )
             page.update()
 
     # check database update
@@ -713,13 +713,13 @@ def main(page: ft.Page):
                 on_action=on_update_click,
             )
             page.open(updated_snackbar)
-            # home_view.appbar.actions.append(
-            #     ft.IconButton(
-            #         ft.Icons.SYSTEM_UPDATE,
-            #         on_click=open_update_dialog,
-            #         tooltip="資料庫有新更新",
-            #     )
-            # )
+            home_view.appbar.actions.append(
+                ft.IconButton(
+                    ft.Icons.SYSTEM_UPDATE,
+                    on_click=open_update_dialog,
+                    tooltip="資料庫有新更新",
+                )
+            )
             page.update()
     elif should_update == "all":
         updates = taiwanbus.check_database_update()
