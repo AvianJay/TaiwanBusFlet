@@ -671,7 +671,7 @@ def main(page: ft.Page):
         page.update()
     
     def open_update_dialog():
-        global home_view
+        nonlocal home_view
         updates = taiwanbus.check_database_update()
         if any(updates.values()):
             update_message = ""
