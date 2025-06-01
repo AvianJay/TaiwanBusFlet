@@ -834,6 +834,7 @@ def main(page: ft.Page):
                         tooltip="資料庫有新更新",
                     )
                 )
+                home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
                 page.update()
         elif should_update == "all":
             updates = taiwanbus.check_database_update()
@@ -888,16 +889,46 @@ def main(page: ft.Page):
                     )
                     page.open(network_snackbar)
                     page.update()
-        elif should_update == "no":
-            updates = taiwanbus.check_database_update()
-            if any(updates.values()):
-                home_view.appbar.actions.append(
-                    ft.IconButton(
-                        ft.Icons.SYSTEM_UPDATE,
-                        on_click=open_update_dialog,
-                        tooltip="資料庫有新更新",
+                try:
+                    updates = taiwanbus.check_database_update()
+                    if any(updates.values()):
+                        home_view.appbar.actions.append(
+                            ft.IconButton(
+                                ft.Icons.SYSTEM_UPDATE,
+                                on_click=open_update_dialog,
+                                tooltip="資料庫有新更新",
+                            )
+                        )
+                        home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
+                        page.update()
+                except Exception as e:
+                    print("Error checking database update:", str(e))
+                    error_snackbar = ft.SnackBar(
+                        content=ft.Text("檢查資料庫更新時發生錯誤"),
+                        action="確定",
                     )
+                    page.open(error_snackbar)
+                    page.update()
+        elif should_update == "no":
+            try:
+                updates = taiwanbus.check_database_update()
+                if any(updates.values()):
+                    home_view.appbar.actions.append(
+                        ft.IconButton(
+                            ft.Icons.SYSTEM_UPDATE,
+                            on_click=open_update_dialog,
+                            tooltip="資料庫有新更新",
+                        )
+                    )
+                    home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
+                    page.update()
+            except Exception as e:
+                print("Error checking database update:", str(e))
+                error_snackbar = ft.SnackBar(
+                    content=ft.Text("檢查資料庫更新時發生錯誤"),
+                    action="確定",
                 )
+                page.open(error_snackbar)
                 page.update()
 
 ft.app(main)
