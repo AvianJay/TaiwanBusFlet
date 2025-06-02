@@ -221,14 +221,14 @@ def main(page: ft.Page):
                         path.content.controls.append(
                             ft.FilledButton(
                                 bus_info[path_id]["stops"][i]["bus"][0]["id"],
-                                icon=ft.Icons.DIRECTIONS_BUS,
+                                icon=ft.Icons.ACCESSIBLE if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "0" else ft.Icons.DIRECTIONS_BUS,
                                 style=ft.ButtonStyle(
                                     alignment=ft.alignment.center_right
                                 ),
                                 on_click=lambda e: page.launch_url(f"https://twbusforum.fandom.com/zh-tw/wiki/%E7%89%B9%E6%AE%8A:%E6%90%9C%E5%B0%8B?scope=internal&navigationSearch=true&query={e.control.text}"),
                                 bgcolor=(
                                     ft.Colors.YELLOW_800
-                                    if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "0"
+                                    if bus_info[path_id]["stops"][i]["bus"][0]["id"].startswith("E")  # 土法煉鋼
                                     else (ft.Colors.PRIMARY)
                                 ),
                             )
@@ -591,7 +591,7 @@ def main(page: ft.Page):
                             ft.Text(f"Platform: {config.platform}\n"
                                     f"Provider: {config.config('provider')}\n"
                                     # f"Database: {str(json.load(open(os.path.join(config.datadir, ".taiwanbus", "version.json"), 'r', encoding='utf-8')).values()[0])}\n"
-                                    f"Network Status: {multiplatform.get_network_status().value}"
+                                    f"Network Status: {multiplatform.get_network_status().value}\n"
                                     f"Last location: {location}"
                                     ),
                         ]),

@@ -49,3 +49,5 @@ dependencies = [
 
 [tool.flet.android.permission]
 "android.permission.ACCESS_NETWORK_STATE" = true
+"android.permission.ACCESS_FINE_LOCATION" = true
+"android.permission.ACCESS_COARSE_LOCATION" = true
