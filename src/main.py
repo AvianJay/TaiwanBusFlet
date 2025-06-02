@@ -1,5 +1,6 @@
 import flet as ft
 import taiwanbus
+import taiwanbus.exceptions as tbe
 import asyncio
 import config
 import time
@@ -78,7 +79,11 @@ def main(page: ft.Page):
     def stop_on_click(routekey, pathid, stopid, stopname):
         tf = ft.Column([
             ft.ListTile(title=ft.Text("新增至我的最愛"), on_click=lambda e: add_to_favorite(routekey, pathid, stopid)),
-            ft.ListTile(title=ft.Text("新增至主畫面"), on_click=lambda e: add_to_home_screen(routekey, pathid, stopid)),
+            *(
+                [
+                    ft.ListTile(title=ft.Text("新增至主畫面"), on_click=lambda e: add_to_home_screen(routekey, pathid, stopid)),
+                ] if config.platform == "android" else []
+            ),
         ], expand_loose=True)
         stopdialog = ft.AlertDialog(
                 title=ft.Text(stopname),
@@ -297,7 +302,15 @@ def main(page: ft.Page):
         page.views.append(home_view)
         if page.route == "/search":
             suggestions = []
-            routes = asyncio.run(taiwanbus.fetch_routes_by_name(""))
+            try:
+                routes = asyncio.run(taiwanbus.fetch_routes_by_name(""))
+            except tbe.DatabaseNotFoundError as e:
+                page.open(ft.SnackBar(
+                    content=ft.Text("找不到資料庫，請先更新資料庫！"),
+                    action="確定",
+                ))
+                page.go("/")
+                return
             for route in routes:
                 suggestions.append(ft.AutoCompleteSuggestion(key=f"{route['provider']}-{route['route_name']}/{route['route_key']}", value=f"{route['provider']}-{route['route_name']}/{route['route_key']}"),)
             page.views.append(
@@ -808,8 +821,16 @@ def main(page: ft.Page):
 
     home_view.navigation_bar = ft.NavigationBar(
         destinations=[
-            ft.NavigationBarDestination(icon=ft.Icons.HOME, label="主頁"),
-            ft.NavigationBarDestination(icon=ft.Icons.AUTORENEW, label="自動化"),
+            ft.NavigationBarDestination(
+                icon=ft.Icons.HOME_OUTLINED,
+                selected_icon=ft.Icons.HOME,
+                label="主頁"
+            ),
+            ft.NavigationBarDestination(
+                icon=ft.Icons.AUTORENEW_OUTLINED,
+                selected_icon=ft.Icons.AUTORENEW,
+                label="自動化"
+            ),
         ],
         on_change=home_on_navigation_change,
     )
