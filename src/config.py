@@ -32,6 +32,7 @@ default_config = {
     "always_show_second": False,
     "auto_update": "check_popup", # no, check_popup, check_notify, all, wifi, cellular
     "firstrun": True,
+    "theme": "system",
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None

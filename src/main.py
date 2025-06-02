@@ -15,6 +15,12 @@ def main(page: ft.Page):
     page.title = "TaiwanBus"
     # page.adaptive = True
 
+    # theme
+    def update_theme(theme):
+        config.config("theme", ft.ThemeMode(theme).value, "w")
+        page.theme_mode = ft.ThemeMode(config.config("theme"))
+    update_theme()
+
     home_view = ft.View("/")
     home_view.appbar = ft.AppBar(
         title=ft.Text("TaiwanBus"),
@@ -520,13 +526,39 @@ def main(page: ft.Page):
                         ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.Column([
                             # ft.Text("這是設定頁面 WIP 哈哈"),
-                            # dropdown
+                            # theme
+                            ft.Dropdown(
+                                label="主題",
+                                options=[
+                                    ft.DropdownOption(
+                                        key="system",
+                                        leading_icon=ft.Icons.BRIGHTNESS_AUTO,
+                                        text="跟隨系統",
+                                        content=ft.Text("跟隨系統"),
+                                    ),
+                                    ft.DropdownOption(
+                                        key="light",
+                                        leading_icon=ft.Icons.LIGHT_MODE,
+                                        text="淺色",
+                                        content=ft.Text("淺色"),
+                                    ),
+                                    ft.DropdownOption(
+                                        key="dark",
+                                        leading_icon=ft.Icons.DARK_MODE,
+                                        text="深色",
+                                        content=ft.Text("深色"),
+                                    ),
+                                ],
+                                on_change=lambda e: update_theme(e.control.value),
+                                value=config.config("theme"),
+                            ),
+                            # dropdown database
                             ft.Dropdown(
                                 label="選擇資料庫",
                                 options=[
-                                    ft.DropdownOption(key="twn", content=ft.Text("台灣")),
-                                    ft.DropdownOption(key="tcc", content=ft.Text("台中")),
-                                    ft.DropdownOption(key="tpe", content=ft.Text("台北")),
+                                    ft.DropdownOption(key="twn", text="台灣", content=ft.Text("台灣")),
+                                    ft.DropdownOption(key="tcc", text="台中", content=ft.Text("台中")),
+                                    ft.DropdownOption(key="tpe", text="台北", content=ft.Text("台北")),
                                 ],
                                 on_change=lambda e: config.config("provider", e.control.value, "w"),
                                 value=config.config("provider"),
@@ -565,14 +597,14 @@ def main(page: ft.Page):
                             ft.Dropdown(
                                 label="自動更新方式",
                                 options=[
-                                    ft.DropdownOption(key="no", content=ft.Text("不自動更新")),
-                                    ft.DropdownOption(key="check_popup", content=ft.Text("檢查更新並彈出提示")),
-                                    ft.DropdownOption(key="check_notify", content=ft.Text("檢查更新並通知")),
-                                    ft.DropdownOption(key="all", content=ft.Text("自動更新")),
+                                    ft.DropdownOption(key="no", text="不自動更新", content=ft.Text("不自動更新")),
+                                    ft.DropdownOption(key="check_popup", text="檢查更新並彈出提示", content=ft.Text("檢查更新並彈出提示")),
+                                    ft.DropdownOption(key="check_notify", text="檢查更新並通知", content=ft.Text("檢查更新並通知")),
+                                    ft.DropdownOption(key="all", text="自動更新", content=ft.Text("自動更新")),
                                     *(
                                         [
-                                            ft.DropdownOption(key="wifi", content=ft.Text("僅在 Wi-Fi 下自動更新")),
-                                            ft.DropdownOption(key="cellular", content=ft.Text("僅在行動網路下自動更新")),
+                                            ft.DropdownOption(key="wifi", text="僅在 Wi-Fi 下自動更新", content=ft.Text("僅在 Wi-Fi 下自動更新")),
+                                            ft.DropdownOption(key="cellular", text="僅在行動網路下自動更新", content=ft.Text("僅在行動網路下自動更新")),
                                         ]
                                         if config.platform == "android" else []
                                     ),
