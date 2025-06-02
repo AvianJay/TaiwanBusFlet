@@ -56,10 +56,22 @@ def main(page: ft.Page):
                 ]
             )
         page.open(adddialog)
+    
+    def add_to_home_screen(routekey, pathid, stopid):
+        tf = ft.TextField(label="捷徑名稱")
+        adddialog = ft.AlertDialog(
+                title=ft.Text("新增至主畫面..."),
+                content=tf,
+                actions=[
+                    ft.TextButton("新增", on_click=lambda e: multiplatform.create_shortcut(f"/viewbus/{routekey}/{pathid}/{stopid}", tf.value)),
+                ]
+            )
+        page.open(adddialog)
 
     def stop_on_click(routekey, pathid, stopid, stopname):
         tf = ft.Column([
-            ft.ListTile(title=ft.Text("新增至我的最愛"), on_click=lambda e: add_to_favorite(routekey, pathid, stopid))
+            ft.ListTile(title=ft.Text("新增至我的最愛"), on_click=lambda e: add_to_favorite(routekey, pathid, stopid)),
+            ft.ListTile(title=ft.Text("新增至主畫面"), on_click=lambda e: add_to_home_screen(routekey, pathid, stopid)),
         ], expand_loose=True)
         stopdialog = ft.AlertDialog(
                 title=ft.Text(stopname),

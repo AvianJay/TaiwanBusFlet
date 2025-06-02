@@ -22,3 +22,9 @@ def get_network_status():
         return status
     else:
         return NetworkStatus.UNKNOWN
+
+def create_shortcut(data, label):
+    if current:
+        return current.create_shortcut()
+    else:
+        return False
