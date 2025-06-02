@@ -129,6 +129,11 @@ def main(page: ft.Page):
                                     border_radius=30,
                                 ),
                                 ft.Text(stop["stop_name"]),
+                                ft.Placeholder(
+                                    expand=True,
+                                    fallback_height=0,
+                                    stroke_width=0,
+                                ),
                             ]
                         ),
                         key=str(stop["stop_id"]),
@@ -196,8 +201,8 @@ def main(page: ft.Page):
                     path.content.controls[0].bgcolor = bgcolor
                     path.content.controls[0].content.color = textcolor
                     path.content.controls[1].value = bus_info[path_id]["stops"][i]["stop_name"]
-                    if len(path.content.controls) == 3:
-                        del path.content.controls[2]
+                    if len(path.content.controls) == 4:
+                        del path.content.controls[3]
                     if bus_info[path_id]["stops"][i]["bus"]:
                         path.content.controls.append(
                             ft.FilledButton(
@@ -205,7 +210,9 @@ def main(page: ft.Page):
                                 icon=ft.Icons.DIRECTIONS_BUS,
                                 style=ft.ButtonStyle(
                                     alignment=ft.alignment.center_right
-                                )
+                                ),
+                                on_click=lambda e: page.launch_url(f"https://twbusforum.fandom.com/zh-tw/wiki/%E7%89%B9%E6%AE%8A:%E6%90%9C%E5%B0%8B?scope=internal&navigationSearch=true&query={e.control.text}"),
+                                bgcolor=ft.Colors.YELLOW if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "0" else ft.Colors.PRIMARY,
                             )
                         )
             page.update()
