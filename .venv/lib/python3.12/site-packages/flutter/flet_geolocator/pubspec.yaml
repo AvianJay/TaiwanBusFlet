@@ -1,0 +1,18 @@
+name: flet_geolocator
+description: Flet Geolocator control
+homepage: https://flet.dev
+repository: https://github.com/flet-dev/flet-geolocator/src/flutter/flet_geolocator
+version: 0.1.0
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+  flutter: '>=1.17.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  geolocator: ^13.0.1
+  collection: ^1.16.0
+  flet: ^0.25.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
