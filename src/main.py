@@ -196,6 +196,18 @@ def main(page: ft.Page):
                     path.content.controls[0].bgcolor = bgcolor
                     path.content.controls[0].content.color = textcolor
                     path.content.controls[1].value = bus_info[path_id]["stops"][i]["stop_name"]
+                    if len(path.content.controls) == 3:
+                        del path.content.controls[2]
+                    if bus_info[path_id]["stops"][i]["bus"]:
+                        path.content.controls.append(
+                            ft.FilledButton(
+                                bus_info[path_id]["stops"][i]["bus"][0]["id"],
+                                icon=ft.Icons.DIRECTIONS_BUS,
+                                style=ft.ButtonStyle(
+                                    alignment=ft.alignment.center_right
+                                )
+                            )
+                        )
             page.update()
             timer = int(config.config("bus_update_time"))
             for i in range(timer + 1):
