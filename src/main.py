@@ -204,6 +204,8 @@ def main(page: ft.Page):
                     if len(path.content.controls) == 4:
                         del path.content.controls[3]
                     if bus_info[path_id]["stops"][i]["bus"]:
+                        # print(page.theme_mode)
+                        # is_dark = page.platform_brightness == ft.Brightness.DARK
                         path.content.controls.append(
                             ft.FilledButton(
                                 bus_info[path_id]["stops"][i]["bus"][0]["id"],
@@ -212,7 +214,11 @@ def main(page: ft.Page):
                                     alignment=ft.alignment.center_right
                                 ),
                                 on_click=lambda e: page.launch_url(f"https://twbusforum.fandom.com/zh-tw/wiki/%E7%89%B9%E6%AE%8A:%E6%90%9C%E5%B0%8B?scope=internal&navigationSearch=true&query={e.control.text}"),
-                                bgcolor=ft.Colors.YELLOW if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "0" else ft.Colors.PRIMARY,
+                                bgcolor=(
+                                    ft.Colors.YELLOW_800
+                                    if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "0"
+                                    else (ft.Colors.PRIMARY)
+                                ),
                             )
                         )
             page.update()
@@ -772,7 +778,7 @@ def main(page: ft.Page):
         page.go(top_view.route)
 
     page.on_route_change = route_change
-    # page.on_view_pop = view_pop
+    page.on_view_pop = view_pop
     page.go(page.route)
     home_show_page(0)
 
