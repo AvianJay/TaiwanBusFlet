@@ -25,6 +25,6 @@ def get_network_status():
 
 def create_shortcut(data, label):
     if current:
-        return current.create_shortcut()
+        return current.create_shortcut(data, label)
     else:
         return False
