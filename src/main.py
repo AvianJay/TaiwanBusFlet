@@ -16,9 +16,10 @@ def main(page: ft.Page):
     # page.adaptive = True
 
     # theme
-    def update_theme(theme):
+    def update_theme(theme=config.config("theme")):
         config.config("theme", ft.ThemeMode(theme).value, "w")
         page.theme_mode = ft.ThemeMode(config.config("theme"))
+        page.update()
     update_theme()
 
     home_view = ft.View("/")

@@ -8,7 +8,7 @@ import threading
 
 # info
 app_version = "0.0.1"
-config_version = 5
+config_version = 6
 # taiwanbus_version = version("taiwanbus")
 # No package metadata when complied
 # taiwanbus.__version__ will be added in 0.1.0
