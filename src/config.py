@@ -168,20 +168,27 @@ gl = fg.Geolocator(
     )
 
 def location_permission(request=True):
-    if request:
-        gl.request_permission(wait_timeout=60)
-    return gl.get_permission_status()
+    try:
+        if request:
+            gl.request_permission(wait_timeout=60)
+        return gl.get_permission_status()
+    except:
+        return False
 
 def get_location(force=False):
-    if location_permission() != fg.GeolocatorPermissionStatus.ALWAYS or fg.GeolocatorPermissionStatus.WHEN_IN_USE:
-        print("Location permission not granted.")
-        return None
     try:
-        if force:
-            return gl.get_current_position()
-        else:
-            threading.Thread(target=gl.get_current_position, daemon=True).start()
-            return gl.get_last_known_position()
+        if location_permission() != fg.GeolocatorPermissionStatus.ALWAYS or fg.GeolocatorPermissionStatus.WHEN_IN_USE:
+            print("Location permission not granted.")
+            return None
+        try:
+            if force:
+                return gl.get_current_position()
+            else:
+                threading.Thread(target=gl.get_current_position, daemon=True).start()
+                return gl.get_last_known_position()
+        except Exception as e:
+            print("Error getting location:", e)
+            return None
     except Exception as e:
         print("Error getting location:", e)
         return None

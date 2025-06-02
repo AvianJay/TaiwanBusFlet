@@ -490,6 +490,11 @@ def main(page: ft.Page):
                 )
             )
         if page.route == "/settings":
+            locationdata = config.get_location()
+            if locationdata:
+                location = f"{locationdata.latitude}, {locationdata.longitude}"
+            else:
+                location = "Failed"
             page.views.append(
                 ft.View(
                     "/settings",
@@ -569,6 +574,7 @@ def main(page: ft.Page):
                                     f"Provider: {config.config('provider')}\n"
                                     # f"Database: {str(json.load(open(os.path.join(config.datadir, ".taiwanbus", "version.json"), 'r', encoding='utf-8')).values()[0])}\n"
                                     f"Network Status: {multiplatform.get_network_status().value}"
+                                    f"Last location: {location}"
                                     ),
                         ]),
                     ],
@@ -742,6 +748,8 @@ def main(page: ft.Page):
                 )
             )
         page.update()
+    
+    page.overlay.append(config.gl)
 
     # 設定 NavigationBar 並處理切換事件
     def home_on_navigation_change(e):
