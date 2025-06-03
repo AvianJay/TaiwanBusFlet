@@ -13,6 +13,7 @@ config_version = 6
 # No package metadata when complied
 # taiwanbus.__version__ will be added in 0.1.0
 taiwanbus_version = "0.0.9"
+update_channel = "release"
 
 # some global variables
 current_bus = None

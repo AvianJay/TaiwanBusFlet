@@ -14,6 +14,14 @@ jobs:
         steps:
         - name: Checkout code
           uses: actions/checkout@v2
+
+        - name: Get short Git commit hash
+          run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+        - name: Replace version and update channel in config.py
+          run: |
+            sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+            sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
     
         - name: Set up Python 3.x
           uses: actions/setup-python@v2
@@ -34,7 +42,7 @@ jobs:
     
         - name: Build APK
           run: |
-            poetry run flet build apk --verbose --no-rich-output --compile-app --compile-packages --android-signing-key-store "$PWD/sign.jks" --android-signing-key-store-password "$KEYSTORE_PASSWORD" --android-signing-key-password "$KEYSTORE_PASSWORD" --android-signing-key-alias "$KEY_ALIAS"
+            poetry run flet build apk --verbose --no-rich-output --compile-app --compile-packages --android-signing-key-store "$PWD/sign.jks" --android-signing-key-store-password "$KEYSTORE_PASSWORD" --android-signing-key-password "$KEYSTORE_PASSWORD" --android-signing-key-alias "$KEY_ALIAS" --build-version "$COMMIT_HASH"
           env:
             KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
             KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
@@ -47,7 +55,7 @@ jobs:
 
         - name: Build IPA
           run: |
-            poetry run flet build ipa --verbose --no-rich-output --compile-app --compile-packages
+            poetry run flet build ipa --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH"
         
         - name: Generate unsigned IPA
           run: |
