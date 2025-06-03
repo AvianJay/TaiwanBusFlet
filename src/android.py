@@ -70,8 +70,9 @@ def create_shortcut(data, label):
 
         # 5. 建立回呼用的 PendingIntent（可略）
         pinned_intent = shortcut_manager.createShortcutResultIntent(shortcut_info)
+        flag_immutable = PendingIntent.FLAG_IMMUTABLE
         pending_intent = PendingIntent.getBroadcast(
-            context, 0, pinned_intent, 0
+            context, 0, pinned_intent, flag_immutable
         )
 
         # 6. 請求建立捷徑
