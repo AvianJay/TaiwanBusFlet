@@ -83,3 +83,7 @@ def create_shortcut(data, label):
         return True
     else:
         return False
+
+def update_app(url, page):
+    page.launch_url(url)
+    return True

@@ -28,3 +28,9 @@ def create_shortcut(data, label):
         return current.create_shortcut(data, label)
     else:
         return False
+
+def update_app(url):
+    if current:
+        return current.update_app(url)
+    else:
+        return False
