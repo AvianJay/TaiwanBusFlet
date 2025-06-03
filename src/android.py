@@ -57,7 +57,7 @@ def create_shortcut(data, label):
         # 3. 建立啟動 Intent
         shortcut_intent = Intent(Intent.ACTION_MAIN)
         shortcut_intent.setClassName("tw.avianjay.taiwanbusflet", "tw.avianjay.taiwanbusflet.MainActivity")
-        shortcut_intent.setData(data)
+        shortcut_intent.setData(Uri.parse(data))
         shortcut_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
         # 4. 建立 ShortcutInfo
