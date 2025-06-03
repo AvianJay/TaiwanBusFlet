@@ -67,7 +67,7 @@ def main(page: ft.Page):
     
     def add_to_home_screen(routekey, pathid, stopid):
         route = asyncio.run(taiwanbus.fetch_stops_by_route(routekey))
-        stopname = next((s["stop_name"] for s in route if s["stop_id"] == stopid), "未知站點")
+        stopname = next((s["stop_name"] for s in route if s["stop_id"] == int(stopid)), "未知站點")
         if not stopname:
             stopname = "未知站點"
         tf = ft.TextField(label="捷徑名稱", value=stopname, autofocus=True, on_submit=lambda e: multiplatform.create_shortcut(f"/viewbus/{routekey}/{pathid}/{stopid}", tf.value))
