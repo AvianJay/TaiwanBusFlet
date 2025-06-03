@@ -237,7 +237,7 @@ def main(page: ft.Page):
                         path.content.controls.append(
                             ft.FilledButton(
                                 bus_info[path_id]["stops"][i]["bus"][0]["id"],
-                                icon=ft.Icons.ACCESSIBLE if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "0" else ft.Icons.DIRECTIONS_BUS,
+                                icon=ft.Icons.ACCESSIBLE if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "1" else ft.Icons.DIRECTIONS_BUS,
                                 style=ft.ButtonStyle(
                                     alignment=ft.alignment.center_right
                                 ),
