@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 import taiwanbus
 import flet as ft
 import flet_geolocator as fg
@@ -195,3 +196,17 @@ def get_location(force=False):
         print("Error getting location:", e)
         return None
 
+# check updates
+def check_update():
+    if update_channel == "nightly":
+        workflows_url = "https://api.github.com/repos/AvianJay/TaiwanBusFlet/actions/workflows"
+        res = requests.get(workflows_url).json()
+        workflow_url = next((s["url"] for s in res.get("workflows") if s["name"] == "Build"), None)
+        if not workflow_url:
+            return False, "Workflow not found"
+        workflow_url += "/runs?per_page=1"
+        res = requests.get(workflow_url).json()
+        hash = res.get("workflow_runs")[0].get("head_sha")[0:7]
+        if not hash is app_version:
+            return hash, f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
+        return False, None
