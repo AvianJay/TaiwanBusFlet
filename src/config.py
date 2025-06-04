@@ -174,13 +174,14 @@ def location_permission(request=True):
     try:
         if request:
             gl.request_permission(wait_timeout=60)
+        print(gl.get_permission_status())
         return gl.get_permission_status()
     except:
         return False
 
 def get_location(force=False):
     try:
-        if location_permission() != fg.GeolocatorPermissionStatus.ALWAYS or fg.GeolocatorPermissionStatus.WHEN_IN_USE:
+        if location_permission() != fg.GeolocatorPermissionStatus.ALWAYS or fg.GeolocatorPermissionStatus.WHILE_IN_USE:
             print("Location permission not granted.")
             return None
         try:
