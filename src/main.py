@@ -1028,10 +1028,41 @@ def main(page: ft.Page):
             except Exception as e:
                 print("Error checking database update:", str(e))
                 error_snackbar = ft.SnackBar(
-                    content=ft.Text("檢查資料庫更新時發生錯誤"),
+                    content=ft.Text("檢查資料庫更新時發生錯誤。"),
                     action="確定",
                 )
                 page.open(error_snackbar)
                 page.update()
+    
+    # check app update
+    try:
+        updates, data = config.check_update()
+        if updates:
+            def app_update(e):
+                page.open(ft.SnackBar(
+                    content=ft.Text("正在更新"),
+                ))
+                multiplatform.update_app(data, page)
+            upddlg = ft.AlertDialog(
+                title=ft.Text("應用程式有新更新"),
+                content=ft.Markdown(updates),
+                actions=[
+                    ft.TextButton("下次再說", on_click=lambda e: page.close(upddlg)),
+                    ft.TextButton("更新", on_click=app_update),
+                ],
+            )
+            page.open(upddlg)
+        else:
+            if data:
+                page.open(ft.SnackBar(
+                    content=ft.Text("錯誤: " + data),
+                    action="確定",
+                ))
+    except Exception as e:
+        print("Failed to check app update:", str(e))
+        page.open(ft.SnackBar(
+            content=ft.Text("檢查程式更新時發生錯誤。"),
+            action="確定",
+        ))
 
 ft.app(main)
