@@ -53,6 +53,6 @@ dependencies = [
 "android.permission.ACCESS_NETWORK_STATE" = true
 "android.permission.ACCESS_FINE_LOCATION" = true
 "android.permission.ACCESS_COARSE_LOCATION" = true
-"android.permission.POST_NOTIFICATION" = true
+"android.permission.POST_NOTIFICATIONS" = true
 "android.permission.WAKE_LOCK" = true
 "android.permission.FOREGROUND_SERVICE" = true  
