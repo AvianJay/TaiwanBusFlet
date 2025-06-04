@@ -379,8 +379,8 @@ def main(page: ft.Page):
                 title=ft.Text("請確認"),
                 content=ft.Text("你確定要刪除這個最愛站點嗎？"),
                 actions=[
-                    ft.TextButton("好啊", data=True, on_click=handle_dlg_action_clicked),
                     ft.TextButton("算了", data=False, on_click=handle_dlg_action_clicked),
+                    ft.TextButton("行吧", data=True, on_click=handle_dlg_action_clicked),
                 ],
                 actions_alignment=ft.MainAxisAlignment.END,
             )
@@ -492,7 +492,7 @@ def main(page: ft.Page):
                 content=ft.Text("你確定要刪除這個最愛群組嗎？"),
                 actions=[
                     ft.TextButton("好啊", data=True, on_click=handle_dlg_action_clicked),
-                    ft.TextButton("算了", data=False, on_click=handle_dlg_action_clicked),
+                    ft.TextButton("行吧", data=False, on_click=handle_dlg_action_clicked),
                 ],
                 actions_alignment=ft.MainAxisAlignment.END,
             )
@@ -740,7 +740,7 @@ def main(page: ft.Page):
                 content=ft.Text("是否要立即更新資料庫？"),
                 actions=[
                     ft.TextButton("不要", on_click=ask_cancel_update_button_clicked),
-                    ft.TextButton("好啊", on_click=ask_update_button_clicked),
+                    ft.TextButton("行吧", on_click=ask_update_button_clicked),
                 ],
                 actions_alignment=ft.MainAxisAlignment.END,
             )
@@ -1018,7 +1018,6 @@ def main(page: ft.Page):
                         tooltip="資料庫有新更新",
                     )
                 )
-                home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
                 page.update()
         elif should_update == "all":
             updates = taiwanbus.check_database_update()
@@ -1083,7 +1082,6 @@ def main(page: ft.Page):
                                 tooltip="資料庫有新更新",
                             )
                         )
-                        home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
                         page.update()
                 except Exception as e:
                     print("Error checking database update:", str(e))
@@ -1104,7 +1102,6 @@ def main(page: ft.Page):
                             tooltip="資料庫有新更新",
                         )
                     )
-                    home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
                     page.update()
             except Exception as e:
                 print("Error checking database update:", str(e))
@@ -1147,5 +1144,6 @@ def main(page: ft.Page):
             content=ft.Text("檢查程式更新時發生錯誤。"),
             action="確定",
         ))
+    home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
 
 ft.app(main)
