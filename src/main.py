@@ -895,7 +895,8 @@ def main(page: ft.Page):
                 )
             )
         page.update()
-    
+
+    config.init_geolocator()
     page.overlay.append(config.gl)
 
     # 設定 NavigationBar 並處理切換事件

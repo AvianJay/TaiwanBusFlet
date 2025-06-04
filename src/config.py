@@ -6,7 +6,6 @@ import taiwanbus
 import flet as ft
 import flet_geolocator as fg
 import threading
-import multiplatform
 # from importlib.metadata import version
 
 # info
@@ -164,7 +163,11 @@ def handle_position_change(e):
         except Exception as ex:
             print("Error in position change event:", ex)
 
-gl = fg.Geolocator(
+gl = None
+
+def init_geolocator():
+    import multiplatform
+    fg.Geolocator(
         location_settings=multiplatform.GeolocatorSettings,
         on_position_change=handle_position_change,
         on_error=lambda e: print("Geolocator error:", e),
