@@ -90,8 +90,8 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
-          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
+          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Install dependencies
         run: |
@@ -125,8 +125,8 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
-          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
+          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Install dependencies
         run: |
@@ -160,8 +160,8 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
-          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
+          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Install dependencies
         run: |
