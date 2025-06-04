@@ -181,7 +181,7 @@ def location_permission(request=True):
 
 def get_location(force=False):
     try:
-        if location_permission() != fg.GeolocatorPermissionStatus.ALWAYS or fg.GeolocatorPermissionStatus.WHILE_IN_USE:
+        if location_permission() not in [fg.GeolocatorPermissionStatus.ALWAYS, fg.GeolocatorPermissionStatus.WHILE_IN_USE]:
             print("Location permission not granted.")
             return None
         try:
@@ -212,3 +212,4 @@ def check_update():
         if not hash == app_version:
             return f"New commit: {hash}\n\n**Full Changelog**: [{hash}...{app_version}](https://github.com/AvianJay/TaiwanBusFlet/compare/{hash}...{app_version})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
         return False, None
+    return False, None
