@@ -8,10 +8,11 @@ authors = [
     { name = "AvianJay", email = "avianjay@avianjay.sbs" }
 ]
 dependencies = [
-  "flet==0.27.6",
+  "flet==0.28.3",
   "taiwanbus==0.0.9",
   "flet-geolocator==0.1.0",
   "requests>2.26.0",
+  "flet-permission-handler==0.1.0",
 ]
 
 [tool.flet]
@@ -34,14 +35,14 @@ path = "src"
 
 [tool.uv]
 dev-dependencies = [
-    "flet[all]==0.27.6",
+    "flet[all]==0.28.3",
 ]
 
 [tool.poetry]
 package-mode = false
 
 [tool.poetry.group.dev.dependencies]
-flet = {extras = ["all"], version = "0.27.6"}
+flet = {extras = ["all"], version = "0.28.3"}
 
 [tool.flet.android]
 dependencies = [
@@ -52,3 +53,6 @@ dependencies = [
 "android.permission.ACCESS_NETWORK_STATE" = true
 "android.permission.ACCESS_FINE_LOCATION" = true
 "android.permission.ACCESS_COARSE_LOCATION" = true
+"android.permission.POST_NOTIFICATION" = true
+"android.permission.WAKE_LOCK" = true
+"android.permission.FOREGROUND_SERVICE" = true  
