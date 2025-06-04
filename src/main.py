@@ -753,6 +753,9 @@ def main(page: ft.Page):
                 )
             )
         if page.route == "/firstrun/permission":
+            if config.platform not in ["android", "ios", "web", "macos"]:
+                page.go("/firstrun/provider")
+                return
             location_bar = [
                 ft.Icon(ft.Icons.LOCATION_ON),
                 ft.Text("位置權限"),
@@ -787,7 +790,9 @@ def main(page: ft.Page):
                                 ft.Column(
                                     [
                                         ft.Row(location_bar)
-                                    ]
+                                    ],
+                                    alignment="center",
+                                    horizontal_alignment="center",
                                 ),
                                 ft.TextButton("繼續", on_click=lambda e: page.go("/firstrun/provider")),
                             ],
