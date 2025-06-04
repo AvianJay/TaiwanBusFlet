@@ -329,6 +329,7 @@ def main(page: ft.Page):
         page.open(adddialog)
 
     def route_change(route):
+        config.position_change_events = []
         page.views.clear()
         page.views.append(home_view)
         if page.route == "/search":
