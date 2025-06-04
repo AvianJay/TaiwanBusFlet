@@ -167,7 +167,8 @@ gl = None
 
 def init_geolocator():
     import multiplatform
-    fg.Geolocator(
+    global gl
+    gl = fg.Geolocator(
         location_settings=multiplatform.GeolocatorSettings,
         on_position_change=handle_position_change,
         on_error=lambda e: print("Geolocator error:", e),
