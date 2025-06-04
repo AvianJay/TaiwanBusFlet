@@ -560,18 +560,18 @@ def main(page: ft.Page):
                 )
             )
         if page.route == "/settings":
-            locationdata = config.get_location()
-            if locationdata:
-                location = f"{locationdata.latitude}, {locationdata.longitude}"
-            else:
-                location = "Failed"
+            # locationdata = config.get_location()
+            # if locationdata:
+            #     location = f"{locationdata.latitude}, {locationdata.longitude}"
+            # else:
+            #     location = "Failed"
             page.views.append(
                 ft.View(
                     "/settings",
                     [
                         ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.Column([
-                            # ft.Text("這是設定頁面 WIP 哈哈"),
+                            ft.Text("應用程式設定\n", size=20),
                             # theme
                             ft.Dropdown(
                                 label="主題",
@@ -638,8 +638,20 @@ def main(page: ft.Page):
                                 value=config.config("bus_error_update_time"),
                                 on_change=lambda e: config.config("bus_error_update_time", int(e.control.value), "w"),
                             ),
-                            # auto update
-                            ft.Text("自動更新資料庫"),
+                            # app update check
+                            ft.Text("應用程式更新檢查設定"),
+                            ft.Dropdown(
+                                label="自動更新方式",
+                                options=[
+                                    ft.DropdownOption(key="no", text="不提示更新", content=ft.Text("不提示更新")),
+                                    ft.DropdownOption(key="popup", text="彈出更新提示", content=ft.Text("彈出更新提示")),
+                                    ft.DropdownOption(key="notify", text="通知更新", content=ft.Text("通知更新")),
+                                ],
+                                on_change=lambda e: config.config("app_update_check", e.control.value, "w"),
+                                value=config.config("app_update_check"),
+                            ),
+                            # auto update database
+                            ft.Text("自動更新資料庫設定"),
                             ft.Dropdown(
                                 label="自動更新方式",
                                 options=[
@@ -662,7 +674,8 @@ def main(page: ft.Page):
                             ft.Text("版本資訊"),
                             ft.Text(f"App: {config.app_version}\n"
                                     f"Config: {config.config_version}\n"
-                                    f"TaiwanBus: {config.taiwanbus_version}"
+                                    f"TaiwanBus: {config.taiwanbus_version}\n"
+                                    f"Update channel: {config.update_channel}"
                                     ),
                             # debug info
                             ft.Text("除錯資訊"),
@@ -670,7 +683,7 @@ def main(page: ft.Page):
                                     f"Provider: {config.config('provider')}\n"
                                     # f"Database: {str(json.load(open(os.path.join(config.datadir, ".taiwanbus", "version.json"), 'r', encoding='utf-8')).values()[0])}\n"
                                     f"Network Status: {multiplatform.get_network_status().value}\n"
-                                    f"Last location: {location}"
+                                    # f"Last location: {location}"
                                     ),
                         ]),
                     ],
@@ -817,7 +830,11 @@ def main(page: ft.Page):
                                 ft.Text("我們需要以下權限才能讓你有更好的體驗。", text_align="center", size=10, color=ft.Colors.GREY_500),
                                 ft.Column(
                                     [
-                                        ft.Row(location_bar)
+                                        ft.Row(
+                                            location_bar,
+                                            alignment="center",
+                                            horizontal_alignment="center",
+                                        )
                                     ],
                                     alignment="center",
                                     horizontal_alignment="center",
@@ -1137,11 +1154,18 @@ def main(page: ft.Page):
                 ft.IconButton(
                     ft.Icons.UPDATE,
                     on_click=lambda e: open_app_update_dialog(updates, data),
-                    tooltip="應用程式有新更新",
+                    tooltip="應用程式有新版本",
                 )
             )
             page.update()
-            open_app_update_dialog(updates, data)
+            if config.config("app_update_check") == "popup":
+                open_app_update_dialog(updates, data)
+            elif config.config("app_update_check") == "notify":
+                ft.SnackBar(
+                    content=ft.Text("應用程式有新版本"),
+                    action="查看",
+                    on_action=lambda e: open_app_update_dialog(updates, data),
+                )
         else:
             if data:
                 page.open(ft.SnackBar(
