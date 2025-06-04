@@ -31,7 +31,7 @@ def create_shortcut(data, label):
 
 def update_app(url, page):
     if current:
-        return current.update_app(url)
+        return current.update_app(url, page)
     else:
         page.launch_url(url)
         return True
