@@ -658,7 +658,7 @@ def main(page: ft.Page):
                             [
                                 ft.Text("👋", size=40, text_align="center"),
                                 ft.Text("歡迎使用TaiwanBus！", text_align="center"),
-                                ft.TextButton("繼續", on_click=lambda e: page.go("/firstrun/provider")),
+                                ft.TextButton("繼續", on_click=lambda e: page.go("/firstrun/permission")),
                             ],
                             alignment="center",
                             horizontal_alignment="center",
@@ -743,6 +743,53 @@ def main(page: ft.Page):
                                     value=config.config("auto_update"),
                                 ),
                                 ft.TextButton("繼續", on_click=lambda e: page.open(ask_dialog)),
+                            ],
+                            alignment="center",
+                            horizontal_alignment="center",
+                        ),
+                    ],
+                    vertical_alignment="center",
+                    horizontal_alignment="center",
+                )
+            )
+        if page.route == "/firstrun/permission":
+            location_bar = [
+                ft.Icon(ft.Icons.LOCATION_ON),
+                ft.Text("位置權限"),
+                ft.IconButton(ft.Icons.DO_NOT_DISTURB_ON, icon_color=ft.Colors.GREY, on_click=lambda e: check_location_permission(True)),
+            ]
+            def check_location_permission(request=False):
+                nonlocal location_bar
+                try:
+                    perm = config.location_permission(request)
+                except Exception as e:
+                    print(f"Error checking location permission: {e}")
+                    perm = fg.GeolocatorPermissionStatus.DENIED_FOREVER
+                if perm == fg.GeolocatorPermissionStatus.DENIED_FOREVER:
+                    location_bar[2].icon = ft.Icons.CANCEL
+                    location_bar[2].icon_color = ft.Colors.PINK_700
+                elif perm in [fg.GeolocatorPermissionStatus.ALWAYS, fg.GeolocatorPermissionStatus.WHILE_IN_USE]:
+                    location_bar[2].icon = ft.Icons.CHECK_CIRCLE
+                    location_bar[2].icon_color = ft.Colors.GREEN_300
+                else:
+                    location_bar[2].icon = ft.Icons.DO_NOT_DISTURB_ON
+                    location_bar[2].icon_color = ft.Colors.GREY
+                page.update()
+            check_location_permission()
+            page.views.append(
+                ft.View(
+                    "/firstrun/permission",
+                    [
+                        ft.Column(
+                            [
+                                ft.Text("權限設定", text_align="center"),
+                                ft.Text("我們需要以下權限才能讓你有更好的體驗。", text_align="center", size=10, color=ft.Colors.GREY_500),
+                                ft.Column(
+                                    [
+                                        ft.Row(location_bar)
+                                    ]
+                                ),
+                                ft.TextButton("繼續", on_click=lambda e: page.go("/firstrun/provider")),
                             ],
                             alignment="center",
                             horizontal_alignment="center",
