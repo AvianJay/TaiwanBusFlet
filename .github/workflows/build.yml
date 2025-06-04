@@ -7,6 +7,11 @@ on:
     branches:
       - main
 
+env:
+  PYTHONUTF8: 1
+  FLET_CLI_NO_RICH_OUTPUT: 1
+  UV_NO_PROGRESS: 1
+
 jobs:
   build-macos:
     runs-on: macos-latest
@@ -73,6 +78,10 @@ jobs:
         with:
           name: taiwanbusflet-ios
           path: build/ipa
+
+      - name: Flet Build macOS
+        run: |
+          flet build macos --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH"
 
   build-linux:
     runs-on: ubuntu-latest
