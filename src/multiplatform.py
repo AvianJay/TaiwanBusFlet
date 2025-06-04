@@ -1,10 +1,13 @@
 import config
 from enum import Enum
+import flet_geolocator as fg
 
 if config.platform == "android":
     import android as current
 elif config.platform == "ios":
     import ios as current
+elif config.platform == "web":
+    import web as current
 else:
     current = None
 
@@ -35,3 +38,5 @@ def update_app(url, page):
     else:
         page.launch_url(url)
         return True
+
+GeolocatorSettings = current.GeolocatorSettings if current else fg.GeolocatorSettings(fg.GeolocatorPositionAccuracy.HIGH)

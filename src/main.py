@@ -136,6 +136,18 @@ def main(page: ft.Page):
             title=ft.Text(route_info["route_name"]),
             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
         )
+        on_stop = []
+        def on_position_change(e):
+            nonlocal on_stop
+            on_stop = []
+            for p in bus_info.values():
+                nearest = (0, 99999999999)
+                for s in p:
+                    dis = config.measure(float(s["lat"]), float(s["lon"]), e.latitude, e.longitude)
+                    if nearest[1] > dis:
+                        nearest = (s["stop_id"], dis)
+                on_stop.append(nearest[0])
+        config.position_change_events.append(on_position_change)
         timetexts = {}
         tabs = []
         paths = {}
@@ -234,10 +246,14 @@ def main(page: ft.Page):
                     if len(path.content.controls) == 4:
                         del path.content.controls[3]
                     if bus_info[path_id]["stops"][i]["bus"]:
+                        if bus_info[path_id]["stops"][i]["stop_id"] in on_stop:
+                            icon = ft.Icons.GPS_FIXED
+                        else:
+                            icon = ft.Icons.ACCESSIBLE if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "1" else ft.Icons.DIRECTIONS_BUS
                         path.content.controls.append(
                             ft.FilledButton(
                                 bus_info[path_id]["stops"][i]["bus"][0]["id"],
-                                icon=ft.Icons.ACCESSIBLE if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "1" else ft.Icons.DIRECTIONS_BUS,
+                                icon=icon,
                                 style=ft.ButtonStyle(
                                     alignment=ft.alignment.center_right
                                 ),
@@ -247,6 +263,17 @@ def main(page: ft.Page):
                                     if bus_info[path_id]["stops"][i]["bus"][0]["id"].startswith("E")
                                     else (ft.Colors.PRIMARY)
                                 ),
+                            )
+                        )
+                    elif bus_info[path_id]["stops"][i]["stop_id"] in on_stop:
+                        path.content.controls.append(
+                            ft.FilledButton(
+                                "你的位置",
+                                icon=ft.Icons.GPS_FIXED,
+                                style=ft.ButtonStyle(
+                                    alignment=ft.alignment.center_right
+                                ),
+                                bgcolor=ft.Colors.GREEN_300,
                             )
                         )
             page.update()

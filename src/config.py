@@ -1,10 +1,12 @@
 import os
 import json
+import math
 import requests
 import taiwanbus
 import flet as ft
 import flet_geolocator as fg
 import threading
+import multiplatform
 # from importlib.metadata import version
 
 # info
@@ -63,7 +65,7 @@ except ValueError:
 if _config.get("config_version", 0) < config_version:
     print("Updating config file from version", _config.get("config_version", 0), "to version", config_version)
     for k in default_config.keys():
-        if not _config.get(k):
+        if _config.get(k) == None:
             _config[k] = default_config[k]
     _config["config_version"] = config_version
     print("Saving...")
@@ -163,9 +165,7 @@ def handle_position_change(e):
             print("Error in position change event:", ex)
 
 gl = fg.Geolocator(
-        location_settings=fg.GeolocatorSettings(
-            accuracy=fg.GeolocatorPositionAccuracy.LOW
-        ),
+        location_settings=multiplatform.GeolocatorSettings,
         on_position_change=handle_position_change,
         on_error=lambda e: print("Geolocator error:", e),
     )
@@ -214,3 +214,17 @@ def check_update():
             return f"New commit: {hash}\n\n**Full Changelog**: [{app_version}...{hash}](https://github.com/AvianJay/TaiwanBusFlet/compare/{app_version}...{hash})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
         return False, None
     return False, None
+
+# thanks stackoverflow
+def measure(lat1, lon1, lat2, lon2):
+    R = 6378.137  # Radius of earth in KM
+    dLat = math.radians(lat2 - lat1)
+    dLon = math.radians(lon2 - lon1)
+    a = (math.sin(dLat / 2) ** 2
+         + math.cos(math.radians(lat1))
+         * math.cos(math.radians(lat2))
+         * math.sin(dLon / 2) ** 2
+         )
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    d = R * c
+    return d * 1000  # meters
