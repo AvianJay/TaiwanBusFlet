@@ -1043,10 +1043,12 @@ def main(page: ft.Page):
                     content=ft.Text("正在更新"),
                 ))
                 multiplatform.update_app(data, page)
+            link = updates.split("](")[1].split(")")[0] if "](http" in updates else None
             upddlg = ft.AlertDialog(
                 title=ft.Text("應用程式有新更新"),
                 content=ft.Markdown(updates),
                 actions=[
+                    *( [ft.TextButton("網頁", on_click=lambda e: page.launch_url(link))] if link else [] ),
                     ft.TextButton("下次再說", on_click=lambda e: page.close(upddlg)),
                     ft.TextButton("更新", on_click=app_update),
                 ],

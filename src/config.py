@@ -207,7 +207,8 @@ def check_update():
             return False, "Workflow not found"
         workflow_url += "/runs?per_page=1"
         res = requests.get(workflow_url).json()
-        hash = res.get("workflow_runs")[0].get("head_sha")[0:7]
-        if not hash is app_version:
+        hash = res.get("workflow_runs")[0].get("head_sha")[0:7].strip().lower()
+        app_version = app_version.strip().lower()
+        if not hash == app_version:
             return f"New commit: {hash}\n\n**Full Changelog**: [{hash}...{app_version}](https://github.com/AvianJay/TaiwanBusFlet/compare/{hash}...{app_version})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
         return False, None
