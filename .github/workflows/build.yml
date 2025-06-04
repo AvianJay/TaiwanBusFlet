@@ -79,9 +79,50 @@ jobs:
           name: taiwanbusflet-ios
           path: build/ipa
 
-      - name: Flet Build macOS
+      - name: Build macOS
         run: |
-          flet build macos --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH"
+          poetry run flet build macos --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH"
+
+      - name: Upload macOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: taiwanbusflet-macos
+          path: build/macos
+      
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Get short Git commit hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Replace version and update channel in config.py
+        run: |
+          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Build Windows
+        run: |
+          poetry run flet build windows --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH"
+
+      - name: Upload Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: taiwanbusflet-windows
+          path: build/windows
 
   build-linux:
     runs-on: ubuntu-latest
