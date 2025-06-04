@@ -8,69 +8,173 @@ on:
       - main
 
 jobs:
-    build:
-        runs-on: macos-latest
-    
-        steps:
-        - name: Checkout code
-          uses: actions/checkout@v2
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-        - name: Get short Git commit hash
-          run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      - name: Get short Git commit hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-        - name: Replace version and update channel in config.py
-          run: |
-            sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
-            sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
-    
-        - name: Set up Python 3.x
-          uses: actions/setup-python@v2
-          with:
-            python-version: '3.x'
-    
-        - name: Install dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install poetry
-            poetry install
+      - name: Replace version and update channel in config.py
+        run: |
+          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
-        - name: Decode keystore
-          run: |
-            echo "$KEYSTORE_BASE64" | base64 --decode > sign.jks
-          env:
-            KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-    
-        - name: Build APK
-          run: |
-            poetry run flet build apk --verbose --no-rich-output --compile-app --compile-packages --android-signing-key-store "$PWD/sign.jks" --android-signing-key-store-password "$KEYSTORE_PASSWORD" --android-signing-key-password "$KEYSTORE_PASSWORD" --android-signing-key-alias "$KEY_ALIAS" --build-version "$COMMIT_HASH"
-          env:
-            KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-            KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
 
-        - name: Upload APK
-          uses: actions/upload-artifact@v4
-          with:
-            name: taiwanbusflet-android
-            path: build/apk
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
 
-        - name: Build IPA
-          run: |
-            poetry run flet build ipa --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH"
-        
-        - name: Generate unsigned IPA
-          run: |
-            mkdir build/ipa/temp/
-            mkdir build/ipa/temp/Payload/
-            mv build/ipa/*.xcarchive/Products/Applications/*.app build/ipa/temp/Payload/
-            rm -rf build/ipa/*.xcarchive
-            cd build/ipa/temp/
-            zip -r Generated_IPA.zip Payload
-            mv Generated_IPA.zip ../Generated_IPA.ipa
-            cd ../../../
-            rm -rf build/ipa/temp
+      - name: Decode keystore
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > sign.jks
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
-        - name: Upload IPA
-          uses: actions/upload-artifact@v4
-          with:
-            name: taiwanbusflet-ios
-            path: build/ipa
+      - name: Build APK
+        run: |
+          poetry run flet build apk --verbose --no-rich-output --compile-app --compile-packages --android-signing-key-store "$PWD/sign.jks" --android-signing-key-store-password "$KEYSTORE_PASSWORD" --android-signing-key-password "$KEYSTORE_PASSWORD" --android-signing-key-alias "$KEY_ALIAS" --build-version "$COMMIT_HASH"
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: taiwanbusflet-android
+          path: build/apk
+
+      - name: Build IPA
+        run: |
+          poetry run flet build ipa --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH"
+
+      - name: Generate unsigned IPA
+        run: |
+          mkdir build/ipa/temp/
+          mkdir build/ipa/temp/Payload/
+          mv build/ipa/*.xcarchive/Products/Applications/*.app build/ipa/temp/Payload/
+          rm -rf build/ipa/*.xcarchive
+          cd build/ipa/temp/
+          zip -r Generated_IPA.zip Payload
+          mv Generated_IPA.zip ../Generated_IPA.ipa
+          cd ../../../
+          rm -rf build/ipa/temp
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: taiwanbusflet-ios
+          path: build/ipa
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Get short Git commit hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Replace version and update channel in config.py
+        run: |
+          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Build Windows
+        run: |
+          poetry run flet build windows --verbose --no-rich-output --compile-app --compile-packages --build-version "${{ github.sha }}"
+
+      - name: Upload Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: taiwanbusflet-windows
+          path: build/windows
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      
+      - name: Get short Git commit hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Replace version and update channel in config.py
+        run: |
+          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Build Linux
+        run: |
+          poetry run flet build linux --verbose --no-rich-output --compile-app --compile-packages --build-version "${{ github.sha }}"
+
+      - name: Upload Linux
+        uses: actions/upload-artifact@v4
+        with:
+          name: taiwanbusflet-linux
+          path: build/linux
+
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      
+      - name: Get short Git commit hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Replace version and update channel in config.py
+        run: |
+          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Build Web
+        run: |
+          poetry run flet build web --verbose --no-rich-output --compile-app --compile-packages --build-version "${{ github.sha }}"
+
+      - name: Upload Web
+        uses: actions/upload-artifact@v4
+        with:
+          name: taiwanbusflet-web
+          path: build/web
