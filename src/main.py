@@ -1112,26 +1112,36 @@ def main(page: ft.Page):
                 page.open(error_snackbar)
                 page.update()
     
+    def open_app_update_dialog(updates, data):
+        def app_update(e):
+            page.open(ft.SnackBar(
+                content=ft.Text("正在更新"),
+            ))
+            multiplatform.update_app(data, page)
+        link = updates.split("](")[1].split(")")[0] if "](http" in updates else None
+        upddlg = ft.AlertDialog(
+            title=ft.Text("應用程式有新更新"),
+            content=ft.Markdown(updates),
+            actions=[
+                *( [ft.TextButton("網頁", on_click=lambda e: page.launch_url(link))] if link else [] ),
+                ft.TextButton("下次再說", on_click=lambda e: page.close(upddlg)),
+                ft.TextButton("更新", on_click=app_update),
+            ],
+        )
+        page.open(upddlg)
     # check app update
     try:
         updates, data = config.check_update()
         if updates:
-            def app_update(e):
-                page.open(ft.SnackBar(
-                    content=ft.Text("正在更新"),
-                ))
-                multiplatform.update_app(data, page)
-            link = updates.split("](")[1].split(")")[0] if "](http" in updates else None
-            upddlg = ft.AlertDialog(
-                title=ft.Text("應用程式有新更新"),
-                content=ft.Markdown(updates),
-                actions=[
-                    *( [ft.TextButton("網頁", on_click=lambda e: page.launch_url(link))] if link else [] ),
-                    ft.TextButton("下次再說", on_click=lambda e: page.close(upddlg)),
-                    ft.TextButton("更新", on_click=app_update),
-                ],
+            home_view.appbar.actions.append(
+                ft.IconButton(
+                    ft.Icons.UPDATE,
+                    on_click=lambda e: open_app_update_dialog(updates, data),
+                    tooltip="應用程式有新更新",
+                )
             )
-            page.open(upddlg)
+            page.update()
+            open_app_update_dialog(updates, data)
         else:
             if data:
                 page.open(ft.SnackBar(
