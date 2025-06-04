@@ -199,6 +199,7 @@ def get_location(force=False):
 
 # check updates
 def check_update():
+    global app_version
     if update_channel == "nightly":
         workflows_url = "https://api.github.com/repos/AvianJay/TaiwanBusFlet/actions/workflows"
         res = requests.get(workflows_url).json()
