@@ -45,7 +45,7 @@ def main(page: ft.Page):
             bus_timer_pb,
             bus_timer_text,
         ]),
-        height=60,
+        height=70,
     )
     #bus_view.scroll = ft.ScrollMode.AUTO
 
