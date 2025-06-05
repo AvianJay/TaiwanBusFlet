@@ -249,8 +249,11 @@ def main(page: ft.Page):
                     if bus_info[path_id]["stops"][i]["bus"]:
                         if bus_info[path_id]["stops"][i]["stop_id"] in on_stop:
                             icon = ft.Icons.GPS_FIXED
+                            bgcolor = ft.Colors.CYAN_400
                         else:
                             icon = ft.Icons.ACCESSIBLE if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "1" else ft.Icons.DIRECTIONS_BUS
+                            bgcolor= ft.Colors.YELLOW_800 if bus_info[path_id]["stops"][i]["bus"][0]["id"].startswith("E") else (ft.Colors.PRIMARY)
+                        
                         path.content.controls.append(
                             ft.FilledButton(
                                 bus_info[path_id]["stops"][i]["bus"][0]["id"],
@@ -259,11 +262,7 @@ def main(page: ft.Page):
                                     alignment=ft.alignment.center_right
                                 ),
                                 on_click=lambda e: page.launch_url(f"https://twbusforum.fandom.com/zh-tw/wiki/%E7%89%B9%E6%AE%8A:%E6%90%9C%E5%B0%8B?scope=internal&navigationSearch=true&query={e.control.text}"),
-                                bgcolor=(
-                                    ft.Colors.YELLOW_800
-                                    if bus_info[path_id]["stops"][i]["bus"][0]["id"].startswith("E")
-                                    else (ft.Colors.PRIMARY)
-                                ),
+                                bgcolor=bgcolor,
                             )
                         )
                     elif bus_info[path_id]["stops"][i]["stop_id"] in on_stop:
@@ -274,7 +273,7 @@ def main(page: ft.Page):
                                 style=ft.ButtonStyle(
                                     alignment=ft.alignment.center_right
                                 ),
-                                bgcolor=ft.Colors.GREEN_300,
+                                bgcolor=ft.Colors.GREEN_400,
                             )
                         )
             page.update()

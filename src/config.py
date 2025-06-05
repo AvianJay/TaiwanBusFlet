@@ -217,7 +217,7 @@ def check_update():
         hash = res.get("workflow_runs")[0].get("head_sha")[0:7].strip().lower()
         app_version = app_version.strip().lower()
         if not hash == app_version:
-            return f"## New commit: {hash}\n\n**Full Changelog**: [{app_version}...{hash}](https://github.com/AvianJay/TaiwanBusFlet/compare/{app_version}...{hash})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
+            return f"### New commit: {hash}\n\n**Full Changelog**: [{app_version}...{hash}](https://github.com/AvianJay/TaiwanBusFlet/compare/{app_version}...{hash})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
         return False, None
     return False, None
 
