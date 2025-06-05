@@ -137,6 +137,8 @@ def main(page: ft.Page):
         )
         on_stop = []
         def on_position_change(e):
+            if not e:
+                return
             nonlocal on_stop
             on_stop = []
             for p in bus_info.values():
@@ -195,15 +197,14 @@ def main(page: ft.Page):
             tabs.append(tab)
         selindex = config.current_bus["pathid"] if config.current_bus["pathid"] else 0
         selstop = config.current_bus["stopid"] if config.current_bus["stopid"] else None
-        bus_view.controls.append(
-                ft.Tabs(
+        pathtabs = ft.Tabs(
                     selected_index=selindex,
                     animation_duration=300,
                     tabs=tabs,
                     expand=1,
                     tab_alignment=ft.TabAlignment.CENTER,
                 )
-            )
+        bus_view.controls.append(pathtabs)
         current_route = page.route
         if selstop:
             page.update()
