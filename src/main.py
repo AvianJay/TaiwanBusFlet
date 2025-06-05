@@ -143,12 +143,13 @@ def main(page: ft.Page):
             for p in bus_info.values():
                 nearest = (0, 99999999999)
                 for s in p:
-                    dis = config.measure(float(s["lat"]), float(s["lon"]), e.latitude, e.longitude)
+                    dis = config.measure(float(s["lat"]), float(s["lon"]), float(e.latitude), float(e.longitude))
                     if nearest[1] > dis:
                         nearest = (s["stop_id"], dis)
                 on_stop.append(nearest[0])
         config.position_change_events.append(on_position_change)
         # on_position_change(config.get_location())
+        config.get_location()
         timetexts = {}
         tabs = []
         paths = {}

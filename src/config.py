@@ -169,7 +169,7 @@ gl = None
 def init_geolocator():
     global gl
     gl = fg.Geolocator(
-        location_settings=fg.GeolocatorSettings(fg.GeolocatorPositionAccuracy.LOW),
+        location_settings=fg.GeolocatorSettings(fg.GeolocatorPositionAccuracy.LOW, time_limit=ft.Duration(seconds=3)),
         on_position_change=handle_position_change,
         on_error=lambda e: print("Geolocator error:", e),
     )
@@ -192,7 +192,7 @@ def get_location(force=False):
             return None
         try:
             if force:
-                return gl.get_current_position(location_settings=multiplatform.GeolocatorSettings)
+                return gl.get_current_position(location_settings=multiplatform.GeolocatorSettings())
             else:
                 threading.Thread(target=gl.get_current_position, daemon=True, args=(fg.GeolocatorPositionAccuracy.HIGH,multiplatform.GeolocatorSettings)).start()
                 return gl.get_last_known_position()
