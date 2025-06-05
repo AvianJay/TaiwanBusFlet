@@ -54,4 +54,3 @@ dependencies = [
 "android.permission.ACCESS_FINE_LOCATION" = true
 "android.permission.ACCESS_COARSE_LOCATION" = true
 "android.permission.POST_NOTIFICATIONS" = true
-"android.permission.WAKE_LOCK" = true
