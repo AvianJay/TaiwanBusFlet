@@ -92,9 +92,9 @@ def update_app(url, page):
 GeolocatorSettings = fg.GeolocatorAndroidSettings(
     fg.GeolocatorPositionAccuracy.HIGH,
     time_limit=60,
-    foreground_notification_text="背景位置服務執行中",
-    foreground_notification_title="背景位置服務",
-    foreground_notification_channel_name="背景位置服務",
-    foreground_notification_enable_wake_lock=True,
-    foreground_notification_enable_wifi_lock=True,
+    # foreground_notification_text="背景位置服務執行中",
+    # foreground_notification_title="背景位置服務",
+    # foreground_notification_channel_name="背景位置服務",
+    # foreground_notification_enable_wake_lock=True,
+    # foreground_notification_enable_wifi_lock=True,
 )
