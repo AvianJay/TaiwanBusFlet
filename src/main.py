@@ -148,7 +148,7 @@ def main(page: ft.Page):
                         nearest = (s["stop_id"], dis)
                 on_stop.append(nearest[0])
         config.position_change_events.append(on_position_change)
-        on_position_change(config.get_location())
+        # on_position_change(config.get_location())
         timetexts = {}
         tabs = []
         paths = {}
