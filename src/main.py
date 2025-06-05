@@ -34,7 +34,6 @@ def main(page: ft.Page):
 
     bus_view = ft.View("/viewbus")
     bus_view.appbar = ft.AppBar(
-        leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
         title=ft.Text("公車資訊"),
         bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
     )
@@ -46,6 +45,7 @@ def main(page: ft.Page):
             bus_timer_pb,
             bus_timer_text,
         ]),
+        height=60,
     )
     #bus_view.scroll = ft.ScrollMode.AUTO
 
@@ -132,7 +132,6 @@ def main(page: ft.Page):
             page.open(snackbar)
             return
         bus_view.appbar = ft.AppBar(
-            leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
             title=ft.Text(route_info["route_name"]),
             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
         )
@@ -351,7 +350,7 @@ def main(page: ft.Page):
                 ft.View(
                     "/search",
                     [
-                        ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("查詢公車"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        ft.AppBar(title=ft.Text("查詢公車"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.AutoComplete(
                             suggestions=suggestions,
                             on_select=search_select,
@@ -472,7 +471,6 @@ def main(page: ft.Page):
                     "/favorites",
                     [
                         ft.AppBar(
-                            leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
                             title=ft.Text("我的最愛"),
                             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
                             actions=[
@@ -571,7 +569,7 @@ def main(page: ft.Page):
                 ft.View(
                     "/settings",
                     [
-                        ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        ft.AppBar(title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.Column([
                             ft.Text("應用程式設定\n", size=20),
                             # theme
