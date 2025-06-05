@@ -148,8 +148,8 @@ def main(page: ft.Page):
                         nearest = (s["stop_id"], dis)
                 on_stop.append(nearest[0])
         config.position_change_events.append(on_position_change)
-        on_position_change(config.get_location())
-        # config.get_location()
+        # on_position_change(config.get_location())
+        config.get_location()
         timetexts = {}
         tabs = []
         paths = {}
@@ -1181,5 +1181,6 @@ def main(page: ft.Page):
             action="確定",
         ))
     home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
+    page.update()
 
 ft.app(main)

@@ -169,7 +169,7 @@ gl = None
 def init_geolocator():
     global gl
     gl = fg.Geolocator(
-        location_settings=fg.GeolocatorSettings(fg.GeolocatorPositionAccuracy.LOW, time_limit=ft.Duration(seconds=3)),
+        location_settings=fg.GeolocatorSettings(fg.GeolocatorPositionAccuracy.LOW, distance_filter=1),
         on_position_change=handle_position_change,
         on_error=lambda e: print("Geolocator error:", e),
     )
