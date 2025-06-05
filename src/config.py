@@ -167,10 +167,9 @@ def handle_position_change(e):
 gl = None
 
 def init_geolocator():
-    import multiplatform
     global gl
     gl = fg.Geolocator(
-        location_settings=multiplatform.GeolocatorSettings,
+        location_settings=fg.GeolocatorSettings(fg.GeolocatorPositionAccuracy.LOW),
         on_position_change=handle_position_change,
         on_error=lambda e: print("Geolocator error:", e),
     )
@@ -180,20 +179,22 @@ def location_permission(request=True):
         if request:
             gl.request_permission(wait_timeout=60)
         print(gl.get_permission_status())
+        print("is_location_service_enabled:", gl.is_location_service_enabled())
         return gl.get_permission_status()
     except:
         return False
 
 def get_location(force=False):
+    import multiplatform
     try:
         if location_permission() not in [fg.GeolocatorPermissionStatus.ALWAYS, fg.GeolocatorPermissionStatus.WHILE_IN_USE]:
             print("Location permission not granted.")
             return None
         try:
             if force:
-                return gl.get_current_position()
+                return gl.get_current_position(location_settings=multiplatform.GeolocatorSettings)
             else:
-                threading.Thread(target=gl.get_current_position, daemon=True).start()
+                threading.Thread(target=gl.get_current_position, daemon=True, args=(fg.GeolocatorPositionAccuracy.HIGH,multiplatform.GeolocatorSettings)).start()
                 return gl.get_last_known_position()
         except Exception as e:
             print("Error getting location:", e)
@@ -216,7 +217,7 @@ def check_update():
         hash = res.get("workflow_runs")[0].get("head_sha")[0:7].strip().lower()
         app_version = app_version.strip().lower()
         if not hash == app_version:
-            return f"New commit: {hash}\n\n**Full Changelog**: [{app_version}...{hash}](https://github.com/AvianJay/TaiwanBusFlet/compare/{app_version}...{hash})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
+            return f"## New commit: {hash}\n\n**Full Changelog**: [{app_version}...{hash}](https://github.com/AvianJay/TaiwanBusFlet/compare/{app_version}...{hash})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
         return False, None
     return False, None
 
