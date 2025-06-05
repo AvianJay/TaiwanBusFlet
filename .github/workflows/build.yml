@@ -39,8 +39,9 @@ jobs:
           poetry install
 
       - name: Decode keystore
+        shell: pwsh
         run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > sign.jks
+          [IO.File]::WriteAllBytes("sign.jks", [Convert]::FromBase64String($env:KEYSTORE_BASE64))
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
