@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-android:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -39,9 +39,8 @@ jobs:
           poetry install
 
       - name: Decode keystore
-        shell: pwsh
         run: |
-          [IO.File]::WriteAllBytes("sign.jks", [Convert]::FromBase64String($env:KEYSTORE_BASE64))
+          echo "$KEYSTORE_BASE64" | base64 --decode > sign.jks
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
