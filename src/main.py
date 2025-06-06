@@ -137,12 +137,13 @@ def main(page: ft.Page):
             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
         )
         on_stop = []
+        another_bus_info = bus_info.copy()
         def on_position_change(e):
             if not e:
                 return
             nonlocal on_stop
             on_stop = []
-            for p in bus_info.values():
+            for p in another_bus_info.values():
                 nearest = (0, 99999999999)
                 for s in p["stops"]:
                     dis = config.measure(float(s["lat"]), float(s["lon"]), float(e.latitude), float(e.longitude))
