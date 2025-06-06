@@ -107,6 +107,8 @@ def wifilock(acquire=None):
     if acquire == None:
         return wifi_lock.isHeld()
     elif acquire:
-        wifi_lock.acquire()
+        if not wifi_lock.isHeld():
+            wifi_lock.acquire()
     else:
-        wifi_lock.release()
+        if wifi_lock.isHeld():
+            wifi_lock.release()
