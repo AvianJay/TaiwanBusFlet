@@ -40,3 +40,9 @@ def update_app(url, page):
         return True
 
 GeolocatorSettings = current.GeolocatorSettings if current else fg.GeolocatorSettings(fg.GeolocatorPositionAccuracy.HIGH)
+
+def wifilock(acquire=None):
+    if current:
+        return current.wifilock(acquire)
+    else:
+        return False

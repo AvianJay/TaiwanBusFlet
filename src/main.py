@@ -131,6 +131,7 @@ def main(page: ft.Page):
             )
             page.open(snackbar)
             return
+        multiplatform.wifilock(True)
         bus_view.appbar = ft.AppBar(
             title=ft.Text(route_info["route_name"]),
             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
@@ -330,6 +331,7 @@ def main(page: ft.Page):
         page.open(adddialog)
 
     def route_change(route):
+        multiplatform.wifilock(False)
         config.position_change_events = []
         page.views.clear()
         page.views.append(home_view)

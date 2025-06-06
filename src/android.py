@@ -2,6 +2,8 @@ from jnius import autoclass, cast
 import os
 import flet_geolocator as fg
 
+activity_host_class = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
+assert activity_host_class is not None
 Intent = autoclass("android.content.Intent")
 PendingIntent = autoclass("android.app.PendingIntent")
 ShortcutInfoBuilder = autoclass("android.content.pm.ShortcutInfo$Builder")
@@ -9,11 +11,16 @@ ShortcutManager = autoclass("android.content.pm.ShortcutManager")
 ComponentName = autoclass("android.content.ComponentName")
 Uri = autoclass("android.net.Uri")
 Class = autoclass("java.lang.Class")
+Context = autoclass("android.content.Context")
+PythonActivity = autoclass(activity_host_class)
+activity = PythonActivity.mActivity
+wifi_service = activity.getSystemService(Context.WIFI_SERVICE)
+WifiManager = autoclass("android.net.wifi.WifiManager")
+wifi_lock = wifi_service.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "MyWifiLock")
 
 def get_network_status():
     from multiplatform import NetworkStatus
     # return NetworkStatus.UNKNOWN
-    activity_host_class = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
     assert activity_host_class is not None
     PythonActivity = autoclass(activity_host_class)
     if PythonActivity is None:
@@ -47,9 +54,6 @@ def get_network_status():
 
 def create_shortcut(data, label):
     # 1. 拿到 context 和 ShortcutManager
-    activity_host_class = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
-    assert activity_host_class is not None
-    PythonActivity = autoclass(activity_host_class)
     context = PythonActivity.mActivity
     shortcut_manager = cast("android.content.pm.ShortcutManager", context.getSystemService(Class.forName("android.content.pm.ShortcutManager")))
 
@@ -98,3 +102,11 @@ GeolocatorSettings = fg.GeolocatorAndroidSettings(
     # foreground_notification_enable_wake_lock=True,
     # foreground_notification_enable_wifi_lock=True,
 )
+
+def wifilock(acquire=None):
+    if acquire == None:
+        return wifi_lock.isHeld()
+    elif acquire:
+        wifi_lock.acquire()
+    else:
+        wifi_lock.release()
