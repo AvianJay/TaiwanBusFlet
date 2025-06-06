@@ -104,6 +104,7 @@ GeolocatorSettings = fg.GeolocatorAndroidSettings(
 )
 
 def wifilock(acquire=None):
+    print("Is WiFi lock held:", wifi_lock.isHeld())
     if acquire == None:
         return wifi_lock.isHeld()
     elif acquire:
