@@ -11,14 +11,14 @@ dependencies:
   flutter:
     sdk: flutter
 
-  serious_python: ^0.7.0
+  serious_python: ^0.9.2
   # serious_python:
   #   git:
   #     url: https://github.com/flet-dev/serious-python
   #     path: src/serious_python
   #     ref: 'd059aef'
 
-  flet: ^0.19.0
+  flet: ^0.27.6
   # flet:
   #   git:
   #     url: https://github.com/flet-dev/flet.git
