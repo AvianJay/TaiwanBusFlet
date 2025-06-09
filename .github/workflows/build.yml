@@ -6,11 +6,16 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 env:
   PYTHONUTF8: 1
   FLET_CLI_NO_RICH_OUTPUT: 1
   UV_NO_PROGRESS: 1
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-android:
@@ -241,8 +246,8 @@ jobs:
 
       - name: Build Web
         run: |
-          REPO_NAME=$(echo "${GITHUB_REPOSITORY#*/}" | sed 's/[^a-zA-Z0-9_-]/-/g')
-          poetry run flet build web --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH" --base-url "$REPO_NAME" --route-url-strategy hash
+        echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}, USER: ${GITHUB_REPOSITORY%/*}, PROJECT_BASE_URL: ${GITHUB_REPOSITORY#*/}"
+          poetry run flet build web --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH" ${GITHUB_REPOSITORY#*/} --route-url-strategy hash
 
       - name: Upload Web
         uses: actions/upload-artifact@v4
