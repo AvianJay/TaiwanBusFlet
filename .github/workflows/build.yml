@@ -250,7 +250,7 @@ jobs:
           poetry run flet build web --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH" --base-url ${GITHUB_REPOSITORY#*/} --route-url-strategy hash
 
       - name: Upload Web
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
           name: taiwanbusflet-web
           path: build/web
