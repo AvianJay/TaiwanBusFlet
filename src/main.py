@@ -836,7 +836,7 @@ def main(page: ft.Page):
                                         ft.Row(
                                             location_bar,
                                             alignment="center",
-                                            horizontal_alignment="center",
+                                            # horizontal_alignment="center",
                                         )
                                     ],
                                     alignment="center",
