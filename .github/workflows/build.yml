@@ -246,7 +246,7 @@ jobs:
 
       - name: Build Web
         run: |
-        echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}, USER: ${GITHUB_REPOSITORY%/*}, PROJECT_BASE_URL: ${GITHUB_REPOSITORY#*/}"
+          echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}, USER: ${GITHUB_REPOSITORY%/*}, PROJECT_BASE_URL: ${GITHUB_REPOSITORY#*/}"
           poetry run flet build web --verbose --no-rich-output --compile-app --compile-packages --build-version "$COMMIT_HASH" ${GITHUB_REPOSITORY#*/} --route-url-strategy hash
 
       - name: Upload Web
