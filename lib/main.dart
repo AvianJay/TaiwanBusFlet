@@ -5,93 +5,77 @@ import 'package:flet/flet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:serious_python/serious_python.dart';
 import 'package:url_strategy/url_strategy.dart';
+import 'package:window_manager/window_manager.dart';
+
+import "python.dart";
+
+/*
+
+
+
+
+
+
+show_boot_screen: False
+boot_screen_message: None
+show_startup_screen: False
+startup_screen_message: None
+*/
+
+
+import 'package:flet_geolocator/flet_geolocator.dart' as flet_geolocator;
+
+import 'package:flet_permission_handler/flet_permission_handler.dart' as flet_permission_handler;
+
 
 const bool isProduction = bool.fromEnvironment('dart.vm.product');
 
 const assetPath = "app/app.zip";
 const pythonModuleName = "main";
-final hideLoadingPage =
-    bool.tryParse("True".toLowerCase()) ??
-        true;
-const outLogFilename = "out.log";
-const errorExitCode = 100;
+final showAppBootScreen = bool.tryParse("False".toLowerCase()) ?? false;
+const appBootScreenMessage = 'Preparing the app for its first launch…';
+final showAppStartupScreen = bool.tryParse("False".toLowerCase()) ?? false;
+const appStartupScreenMessage = 'Getting things ready…';
 
-const pythonScript = """
-import certifi, os, runpy, socket, sys, traceback
+List<CreateControlFactory> createControlFactories = [
 
-os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
-os.environ["SSL_CERT_FILE"] = certifi.where()
+flet_geolocator.createControl,
 
-if os.getenv("FLET_PLATFORM") == "android":
-    import ssl
+flet_permission_handler.createControl,
 
-    def create_default_context(
-        purpose=ssl.Purpose.SERVER_AUTH, *, cafile=None, capath=None, cadata=None
-    ):
-        return ssl.create_default_context(
-            purpose=purpose, cafile=certifi.where(), capath=capath, cadata=cadata
-        )
+];
 
-    ssl._create_default_https_context = create_default_context
-
-out_file = open("$outLogFilename", "w+", buffering=1)
-
-callback_socket_addr = os.environ.get("FLET_PYTHON_CALLBACK_SOCKET_ADDR")
-if ":" in callback_socket_addr:
-    addr, port = callback_socket_addr.split(":")
-    callback_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    callback_socket.connect((addr, int(port)))
-else:
-    callback_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    callback_socket.connect(callback_socket_addr)
-
-sys.stdout = sys.stderr = out_file
-
-def flet_exit(code=0):
-    callback_socket.sendall(str(code).encode())
-    out_file.close()
-    callback_socket.close()
-
-sys.exit = flet_exit
-
-ex = None
-try:
-    runpy.run_module("{module_name}", run_name="__main__")
-except Exception as e:
-    ex = e
-    traceback.print_exception(e)
-
-sys.exit(0 if ex is None else $errorExitCode)
-""";
+String outLogFilename = "";
 
 // global vars
+List<String> _args = [];
 String pageUrl = "";
 String assetsDir = "";
 String appDir = "";
 Map<String, String> environmentVariables = {};
 
-void main() async {
-  if (isProduction) {
-    // ignore: avoid_returning_null_for_void
-    debugPrint = (String? message, {int? wrapWidth}) => null;
-  }
+void main(List<String> args) async {
+  _args = List<String>.from(args);
 
   runApp(FutureBuilder(
       future: prepareApp(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
           // OK - start Python program
-          return kIsWeb
+          return kIsWeb || (isDesktopPlatform() && _args.isNotEmpty)
               ? FletApp(
                   pageUrl: pageUrl,
                   assetsDir: assetsDir,
-                  hideLoadingPage: hideLoadingPage,
-                )
+                  showAppStartupScreen: showAppStartupScreen,
+                  appStartupScreenMessage: appStartupScreenMessage,
+                  createControlFactories: createControlFactories)
               : FutureBuilder(
-                  future: runPythonApp(),
+                  future: runPythonApp(args),
                   builder:
                       (BuildContext context, AsyncSnapshot<String?> snapshot) {
                     if (snapshot.hasData || snapshot.hasError) {
@@ -104,10 +88,11 @@ void main() async {
                     } else {
                       // no result of error
                       return FletApp(
-                        pageUrl: pageUrl,
-                        assetsDir: assetsDir,
-                        hideLoadingPage: hideLoadingPage,
-                      );
+                          pageUrl: pageUrl,
+                          assetsDir: assetsDir,
+                          showAppStartupScreen: showAppStartupScreen,
+                          appStartupScreenMessage: appStartupScreenMessage,
+                          createControlFactories: createControlFactories);
                     }
                   });
         } else if (snapshot.hasError) {
@@ -118,12 +103,27 @@ void main() async {
                   text: snapshot.error.toString()));
         } else {
           // loading
-          return const MaterialApp(home: BlankScreen());
+          return MaterialApp(home: showAppBootScreen ? const BootScreen() : const BlankScreen());
         }
       }));
 }
 
 Future prepareApp() async {
+  if (!_args.contains("--debug")) {
+    // ignore: avoid_returning_null_for_void
+    debugPrint = (String? message, {int? wrapWidth}) => null;
+  } else {
+    _args.remove("--debug");
+  }
+
+  await setupDesktop();
+
+  
+  flet_geolocator.ensureInitialized();
+  
+  flet_permission_handler.ensureInitialized();
+  
+
   if (kIsWeb) {
     // web mode - connect via HTTP
     pageUrl = Uri.base.toString();
@@ -131,9 +131,22 @@ Future prepareApp() async {
     if (routeUrlStrategy == "path") {
       setPathUrlStrategy();
     }
+  } else if (_args.isNotEmpty && isDesktopPlatform()) {
+    // developer mode
+    debugPrint("Flet app is running in Developer mode");
+    pageUrl = _args[0];
+    if (_args.length > 1) {
+      var pidFilePath = _args[1];
+      debugPrint("Args contain a path to PID file: $pidFilePath}");
+      var pidFile = await File(pidFilePath).create();
+      await pidFile.writeAsString("$pid");
+    }
+    if (_args.length > 2) {
+      assetsDir = _args[2];
+      debugPrint("Args contain a path assets directory: $assetsDir}");
+    }
   } else {
-    await setupDesktop();
-
+    // production mode
     // extract app from asset
     appDir = await extractAssetZip(assetPath, checkHash: true);
 
@@ -141,6 +154,29 @@ Future prepareApp() async {
     Directory.current = appDir;
 
     assetsDir = path.join(appDir, "assets");
+
+    // configure apps DATA and TEMP directories
+    WidgetsFlutterBinding.ensureInitialized();
+
+    var appTempPath = (await path_provider.getApplicationCacheDirectory()).path;
+    var appDataPath =
+        (await path_provider.getApplicationDocumentsDirectory()).path;
+
+    if (defaultTargetPlatform != TargetPlatform.iOS &&
+        defaultTargetPlatform != TargetPlatform.android) {
+      // append app name to the path and create dir
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      appDataPath = path.join(appDataPath, "flet", packageInfo.packageName);
+      if (!await Directory(appDataPath).exists()) {
+        await Directory(appDataPath).create(recursive: true);
+      }
+    }
+
+    environmentVariables["FLET_APP_STORAGE_DATA"] = appDataPath;
+    environmentVariables["FLET_APP_STORAGE_TEMP"] = appTempPath;
+
+    outLogFilename = path.join(appTempPath, "console.log");
+    environmentVariables["FLET_APP_CONSOLE"] = outLogFilename;
 
     environmentVariables["FLET_PLATFORM"] =
         defaultTargetPlatform.name.toLowerCase();
@@ -152,7 +188,7 @@ Future prepareApp() async {
       environmentVariables["FLET_SERVER_PORT"] = tcpPort.toString();
     } else {
       // use UDS on other platforms
-      pageUrl = "flet.sock";
+      pageUrl = "flet_$pid.sock";
       environmentVariables["FLET_SERVER_UDS_PATH"] = pageUrl;
     }
   }
@@ -160,8 +196,13 @@ Future prepareApp() async {
   return "";
 }
 
-Future<String?> runPythonApp() async {
-  var script = pythonScript.replaceAll('{module_name}', pythonModuleName);
+Future<String?> runPythonApp(List<String> args) async {
+  var argvItems = args.map((a) => "\"${a.replaceAll('"', '\\"')}\"");
+  var argv = "[${argvItems.isNotEmpty ? argvItems.join(',') : '""'}]";
+  var script = pythonScript
+      .replaceAll("{outLogFilename}", outLogFilename.replaceAll("\\", "\\\\"))
+      .replaceAll('{module_name}', pythonModuleName)
+      .replaceAll('{argv}', argv);
 
   var completer = Completer<String>();
 
@@ -176,7 +217,7 @@ Future<String?> runPythonApp() async {
         'Python output TCP Server is listening on port ${outSocketServer.port}');
     socketAddr = "$tcpAddr:${outSocketServer.port}";
   } else {
-    socketAddr = "stdout.sock";
+    socketAddr = "stdout_$pid.sock";
     if (await File(socketAddr).exists()) {
       await File(socketAddr).delete();
     }
@@ -275,6 +316,34 @@ class ErrorScreen extends StatelessWidget {
   }
 }
 
+class BootScreen extends StatelessWidget {
+  const BootScreen({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Text(appBootScreenMessage, style: Theme.of(context).textTheme.bodySmall,)
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class BlankScreen extends StatelessWidget {
   const BlankScreen({
     super.key,
@@ -294,4 +363,26 @@ Future<int> getUnusedPort() {
     socket.close();
     return port;
   });
+}
+
+Future setupDesktop() async {
+  if (isDesktopPlatform()) {
+    WidgetsFlutterBinding.ensureInitialized();
+    await windowManager.ensureInitialized();
+
+    Map<String, String> env = Platform.environment;
+    var hideWindowOnStart = env["FLET_HIDE_WINDOW_ON_START"];
+    var hideAppOnStart = env["FLET_HIDE_APP_ON_START"];
+    debugPrint("hideWindowOnStart: $hideWindowOnStart");
+    debugPrint("hideAppOnStart: $hideAppOnStart");
+
+    await windowManager.waitUntilReadyToShow(null, () async {
+      if (hideWindowOnStart == null && hideAppOnStart == null) {
+        await windowManager.show();
+        await windowManager.focus();
+      } else if (hideAppOnStart != null) {
+        await windowManager.setSkipTaskbar(true);
+      }
+    });
+  }
 }

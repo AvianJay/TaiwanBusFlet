@@ -25,8 +25,17 @@ if (flutterVersionName == null) {
 android {
     namespace "tw.avianjay.taiwanbusflet"
     compileSdkVersion flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
 
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+        doNotStrip "*/arm64-v8a/libpython*.so"
+        doNotStrip "*/armeabi-v7a/libpython*.so"
+        doNotStrip "*/x86/libpython*.so"
+        doNotStrip "*/x86_64/libpython*.so"
+    }
+    
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -40,26 +49,38 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
-    defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+    
+    
+
+    defaultConfig {        
         applicationId "tw.avianjay.taiwanbusflet"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
+        println("Gradle build config:")
+        println("  minSdkVersion: $flutter.minSdkVersion")
+        println("  targetSdkVersion: $flutter.targetSdkVersion")
+        println("  versionCode: $flutter.versionCode")
+        println("  versionName: $flutter.versionName")
+
+// flet: split_per_abi 
         ndk {
-            abiFilters 'arm64-v8a', 'armeabi-v7a'
+            
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+            
         }
+// flet: end of split_per_abi 
     }
+
+// flet: android_signing 
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+// flet: android_signing 
             signingConfig signingConfigs.debug
+// flet: end of android_signing 
         }
     }
 }

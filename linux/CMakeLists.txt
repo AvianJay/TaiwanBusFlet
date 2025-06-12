@@ -41,7 +41,7 @@ endif()
 # of modifying this function.
 function(APPLY_STANDARD_SETTINGS TARGET)
   target_compile_features(${TARGET} PUBLIC cxx_std_14)
-  target_compile_options(${TARGET} PRIVATE -Wall -Werror)
+  target_compile_options(${TARGET} PRIVATE -Wall -Werror -Wno-unused-variable -Wno-unused-function)
   target_compile_options(${TARGET} PRIVATE "$<$<NOT:$<CONFIG:Debug>>:-O3>")
   target_compile_definitions(${TARGET} PRIVATE "$<$<NOT:$<CONFIG:Debug>>:NDEBUG>")
 endfunction()
@@ -73,6 +73,7 @@ apply_standard_settings(${BINARY_NAME})
 # Add dependency libraries. Add any application-specific dependencies here.
 target_link_libraries(${BINARY_NAME} PRIVATE flutter)
 target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GTK)
+target_link_libraries(${BINARY_NAME} PRIVATE ${MIMALLOC_LIB})
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
@@ -137,6 +138,12 @@ foreach(plugin ${FLUTTER_PLUGIN_LIST})
     )
   endif()
 endforeach(plugin)
+
+# Copy the native assets provided by the build.dart from all packages.
+set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/linux/")
+install(DIRECTORY "${NATIVE_ASSETS_DIR}"
+   DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+   COMPONENT Runtime)
 
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.

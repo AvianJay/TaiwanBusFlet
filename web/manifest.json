@@ -3,9 +3,9 @@
     "short_name": "taiwanbusflet",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
+    "background_color": "#FFFFFF",
     "theme_color": "#0175C2",
-    "description": "TaiwanBus GUI",
+    "description": "",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
