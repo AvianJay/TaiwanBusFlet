@@ -11,7 +11,7 @@ def update_app(url, page):
     page.launch_url(url)
     return True
 
-GeolocatorSettings = fg.GeolocatorAppleSettings(
+GeolocatorSettings = fg.GeolocatorWebSettings(
     fg.GeolocatorPositionAccuracy.HIGH,
 )
 

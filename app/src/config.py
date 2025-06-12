@@ -1,5 +1,7 @@
 import os
 import json
+import math
+import requests
 import taiwanbus
 import flet as ft
 import flet_geolocator as fg
@@ -8,11 +10,12 @@ import threading
 
 # info
 app_version = "0.0.1"
-config_version = 5
+config_version = 7
 # taiwanbus_version = version("taiwanbus")
 # No package metadata when complied
 # taiwanbus.__version__ will be added in 0.1.0
 taiwanbus_version = "0.0.9"
+update_channel = "dev"
 
 # some global variables
 current_bus = None
@@ -32,6 +35,8 @@ default_config = {
     "always_show_second": False,
     "auto_update": "check_popup", # no, check_popup, check_notify, all, wifi, cellular
     "firstrun": True,
+    "theme": "system",
+    "app_update_check": "popup", # no, notify, popup
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None
@@ -60,7 +65,7 @@ except ValueError:
 if _config.get("config_version", 0) < config_version:
     print("Updating config file from version", _config.get("config_version", 0), "to version", config_version)
     for k in default_config.keys():
-        if not _config.get(k):
+        if _config.get(k) == None:
             _config[k] = default_config[k]
     _config["config_version"] = config_version
     print("Saving...")
@@ -159,10 +164,12 @@ def handle_position_change(e):
         except Exception as ex:
             print("Error in position change event:", ex)
 
-gl = fg.Geolocator(
-        location_settings=fg.GeolocatorSettings(
-            accuracy=fg.GeolocatorPositionAccuracy.LOW
-        ),
+gl = None
+
+def init_geolocator():
+    global gl
+    gl = fg.Geolocator(
+        location_settings=fg.GeolocatorSettings(fg.GeolocatorPositionAccuracy.LOW, distance_filter=1),
         on_position_change=handle_position_change,
         on_error=lambda e: print("Geolocator error:", e),
     )
@@ -171,20 +178,23 @@ def location_permission(request=True):
     try:
         if request:
             gl.request_permission(wait_timeout=60)
+        print(gl.get_permission_status())
+        print("is_location_service_enabled:", gl.is_location_service_enabled())
         return gl.get_permission_status()
     except:
         return False
 
 def get_location(force=False):
+    import multiplatform
     try:
-        if location_permission() != fg.GeolocatorPermissionStatus.ALWAYS or fg.GeolocatorPermissionStatus.WHEN_IN_USE:
+        if location_permission() not in [fg.GeolocatorPermissionStatus.ALWAYS, fg.GeolocatorPermissionStatus.WHILE_IN_USE]:
             print("Location permission not granted.")
             return None
         try:
             if force:
-                return gl.get_current_position()
+                return gl.get_current_position(location_settings=multiplatform.GeolocatorSettings())
             else:
-                threading.Thread(target=gl.get_current_position, daemon=True).start()
+                threading.Thread(target=gl.get_current_position, daemon=True, args=(fg.GeolocatorPositionAccuracy.HIGH,multiplatform.GeolocatorSettings)).start()
                 return gl.get_last_known_position()
         except Exception as e:
             print("Error getting location:", e)
@@ -193,3 +203,35 @@ def get_location(force=False):
         print("Error getting location:", e)
         return None
 
+# check updates
+def check_update():
+    global app_version
+    if update_channel == "nightly":
+        workflows_url = "https://api.github.com/repos/AvianJay/TaiwanBusFlet/actions/workflows"
+        res = requests.get(workflows_url).json()
+        workflow_url = next((s["url"] for s in res.get("workflows") if s["name"] == "Build"), None)
+        if not workflow_url:
+            return False, "Workflow not found"
+        workflow_url += "/runs?per_page=1"
+        res = requests.get(workflow_url).json()
+        hash = res.get("workflow_runs")[0].get("head_sha")[0:7].strip().lower()
+        app_version = app_version.strip().lower()
+        if not hash == app_version:
+            if res.get("workflow_runs")[0].get("status") == "completed":
+                return f"### New commit: {hash}\n\n**Full Changelog**: [{app_version}...{hash}](https://github.com/AvianJay/TaiwanBusFlet/compare/{app_version}...{hash})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
+        return False, None
+    return False, None
+
+# thanks stackoverflow
+def measure(lat1, lon1, lat2, lon2):
+    R = 6378.137  # Radius of earth in KM
+    dLat = math.radians(lat2 - lat1)
+    dLon = math.radians(lon2 - lon1)
+    a = (math.sin(dLat / 2) ** 2
+         + math.cos(math.radians(lat1))
+         * math.cos(math.radians(lat2))
+         * math.sin(dLon / 2) ** 2
+         )
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    d = R * c
+    return d * 1000  # meters

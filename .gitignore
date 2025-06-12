@@ -48,3 +48,5 @@ app.*.map.json
 /.venv/
 *.lock
 /src/
+/app/app.zip
+/app/app.zip.hash

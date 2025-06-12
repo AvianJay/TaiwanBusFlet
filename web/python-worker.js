@@ -1,4 +1,4 @@
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js");
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js");
 
 self.pythonModuleName = null;
 self.initialized = false;
@@ -6,6 +6,7 @@ self.flet_js = {}; // namespace for Python global functions
 
 self.initPyodide = async function () {
     self.pyodide = await loadPyodide();
+    await self.pyodide.loadPackage("sqlite3")
     self.pyodide.registerJsModule("flet_js", flet_js);
     flet_js.documentUrl = documentUrl;
     await self.pyodide.runPythonAsync(`

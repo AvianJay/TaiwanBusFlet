@@ -1,9 +1,15 @@
 dependencies:
   cupertino_icons: ^1.0.6
   flet_geolocator:
-    path: F:\TaiwanBusFlet\build\flutter-packages\flet_geolocator
+    git:
+      url: https://github.com/flet-dev/flet-geolocator.git
+      ref: 0.1.0
+      path: src/flutter/flet_geolocator
   flet_permission_handler:
-    path: F:\TaiwanBusFlet\build\flutter-packages\flet_permission_handler
+    git:
+      url: https://github.com/flet-dev/flet-permission-handler.git
+      ref: 0.1.0
+      path: src/flutter/flet_permission_handler
   flutter:
     sdk: flutter
   package_info_plus: ^8.0.2

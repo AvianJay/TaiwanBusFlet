@@ -1,5 +1,6 @@
 import flet as ft
 import taiwanbus
+import taiwanbus.exceptions as tbe
 import asyncio
 import config
 import time
@@ -15,6 +16,13 @@ def main(page: ft.Page):
     page.title = "TaiwanBus"
     # page.adaptive = True
 
+    # theme
+    def update_theme(theme=config.config("theme")):
+        config.config("theme", ft.ThemeMode(theme).value, "w")
+        page.theme_mode = ft.ThemeMode(config.config("theme"))
+        page.update()
+    update_theme()
+
     home_view = ft.View("/")
     home_view.appbar = ft.AppBar(
         title=ft.Text("TaiwanBus"),
@@ -26,7 +34,6 @@ def main(page: ft.Page):
 
     bus_view = ft.View("/viewbus")
     bus_view.appbar = ft.AppBar(
-        leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
         title=ft.Text("公車資訊"),
         bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
     )
@@ -38,6 +45,7 @@ def main(page: ft.Page):
             bus_timer_pb,
             bus_timer_text,
         ]),
+        height=70,
     )
     #bus_view.scroll = ft.ScrollMode.AUTO
 
@@ -56,10 +64,30 @@ def main(page: ft.Page):
                 ]
             )
         page.open(adddialog)
+    
+    def add_to_home_screen(routekey, pathid, stopid):
+        route = asyncio.run(taiwanbus.fetch_stops_by_route(routekey))
+        stopname = next((s["stop_name"] for s in route if s["stop_id"] == int(stopid)), "未知站點")
+        if not stopname:
+            stopname = "未知站點"
+        tf = ft.TextField(label="捷徑名稱", value=stopname, autofocus=True, on_submit=lambda e: multiplatform.create_shortcut(f"/viewbus/{routekey}/{pathid}/{stopid}", tf.value))
+        adddialog = ft.AlertDialog(
+                title=ft.Text("新增至主畫面..."),
+                content=tf,
+                actions=[
+                    ft.TextButton("新增", on_click=lambda e: multiplatform.create_shortcut(f"/viewbus/{routekey}/{pathid}/{stopid}", tf.value)),
+                ]
+            )
+        page.open(adddialog)
 
     def stop_on_click(routekey, pathid, stopid, stopname):
         tf = ft.Column([
-            ft.ListTile(title=ft.Text("新增至我的最愛"), on_click=lambda e: add_to_favorite(routekey, pathid, stopid))
+            ft.ListTile(title=ft.Text("新增至我的最愛"), on_click=lambda e: add_to_favorite(routekey, pathid, stopid)),
+            *(
+                [
+                    ft.ListTile(title=ft.Text("新增至主畫面"), on_click=lambda e: add_to_home_screen(routekey, pathid, stopid)),
+                ] if config.platform == "android" else []
+            ),
         ], expand_loose=True)
         stopdialog = ft.AlertDialog(
                 title=ft.Text(stopname),
@@ -103,11 +131,28 @@ def main(page: ft.Page):
             )
             page.open(snackbar)
             return
+        multiplatform.wifilock(True)
         bus_view.appbar = ft.AppBar(
-            leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
             title=ft.Text(route_info["route_name"]),
             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
         )
+        on_stop = []
+        another_bus_info = bus_info.copy()
+        def on_position_change(e):
+            if not e:
+                return
+            nonlocal on_stop
+            on_stop = []
+            for p in another_bus_info.values():
+                nearest = (0, 99999999999)
+                for s in p["stops"]:
+                    dis = config.measure(float(s["lat"]), float(s["lon"]), float(e.latitude), float(e.longitude))
+                    if nearest[1] > dis:
+                        nearest = (s["stop_id"], dis)
+                on_stop.append(nearest[0])
+        config.position_change_events.append(on_position_change)
+        # on_position_change(config.get_location())
+        config.get_location()
         timetexts = {}
         tabs = []
         paths = {}
@@ -154,15 +199,14 @@ def main(page: ft.Page):
             tabs.append(tab)
         selindex = config.current_bus["pathid"] if config.current_bus["pathid"] else 0
         selstop = config.current_bus["stopid"] if config.current_bus["stopid"] else None
-        bus_view.controls.append(
-                ft.Tabs(
+        pathtabs = ft.Tabs(
                     selected_index=selindex,
                     animation_duration=300,
                     tabs=tabs,
                     expand=1,
                     tab_alignment=ft.TabAlignment.CENTER,
                 )
-            )
+        bus_view.controls.append(pathtabs)
         current_route = page.route
         if selstop:
             page.update()
@@ -200,19 +244,39 @@ def main(page: ft.Page):
                     path.content.controls[0].content.value = time_text
                     path.content.controls[0].bgcolor = bgcolor
                     path.content.controls[0].content.color = textcolor
-                    path.content.controls[1].value = bus_info[path_id]["stops"][i]["stop_name"]
+                    path.content.controls[1].value = bus_info[path_id]["stops"][i]["stop_name"].replace("(", "\n(")
+                    # path.content.controls[1].max_lines = None  # 允許多行
+                    # path.content.controls[1].soft_wrap = True  # 自動換行
                     if len(path.content.controls) == 4:
                         del path.content.controls[3]
                     if bus_info[path_id]["stops"][i]["bus"]:
+                        if bus_info[path_id]["stops"][i]["stop_id"] in on_stop:
+                            icon = ft.Icons.GPS_FIXED
+                            bgcolor = ft.Colors.CYAN_400
+                        else:
+                            icon = ft.Icons.ACCESSIBLE if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "1" else ft.Icons.DIRECTIONS_BUS
+                            bgcolor= ft.Colors.YELLOW_800 if bus_info[path_id]["stops"][i]["bus"][0]["id"].startswith("E") else (ft.Colors.PRIMARY)
+                        
                         path.content.controls.append(
                             ft.FilledButton(
                                 bus_info[path_id]["stops"][i]["bus"][0]["id"],
-                                icon=ft.Icons.DIRECTIONS_BUS,
+                                icon=icon,
                                 style=ft.ButtonStyle(
                                     alignment=ft.alignment.center_right
                                 ),
                                 on_click=lambda e: page.launch_url(f"https://twbusforum.fandom.com/zh-tw/wiki/%E7%89%B9%E6%AE%8A:%E6%90%9C%E5%B0%8B?scope=internal&navigationSearch=true&query={e.control.text}"),
-                                bgcolor=ft.Colors.YELLOW if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "0" else ft.Colors.PRIMARY,
+                                bgcolor=bgcolor,
+                            )
+                        )
+                    elif bus_info[path_id]["stops"][i]["stop_id"] in on_stop:
+                        path.content.controls.append(
+                            ft.FilledButton(
+                                "你的位置",
+                                icon=ft.Icons.GPS_FIXED,
+                                style=ft.ButtonStyle(
+                                    alignment=ft.alignment.center_right
+                                ),
+                                bgcolor=ft.Colors.GREEN_400,
                             )
                         )
             page.update()
@@ -268,18 +332,28 @@ def main(page: ft.Page):
         page.open(adddialog)
 
     def route_change(route):
+        multiplatform.wifilock(False)
+        config.position_change_events = []
         page.views.clear()
         page.views.append(home_view)
         if page.route == "/search":
             suggestions = []
-            routes = asyncio.run(taiwanbus.fetch_routes_by_name(""))
+            try:
+                routes = asyncio.run(taiwanbus.fetch_routes_by_name(""))
+            except tbe.DatabaseNotFoundError as e:
+                page.open(ft.SnackBar(
+                    content=ft.Text("找不到資料庫，請先更新資料庫！"),
+                    action="確定",
+                ))
+                page.go("/")
+                return
             for route in routes:
                 suggestions.append(ft.AutoCompleteSuggestion(key=f"{route['provider']}-{route['route_name']}/{route['route_key']}", value=f"{route['provider']}-{route['route_name']}/{route['route_key']}"),)
             page.views.append(
                 ft.View(
                     "/search",
                     [
-                        ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("查詢公車"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        ft.AppBar(title=ft.Text("查詢公車"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.AutoComplete(
                             suggestions=suggestions,
                             on_select=search_select,
@@ -309,8 +383,8 @@ def main(page: ft.Page):
                 title=ft.Text("請確認"),
                 content=ft.Text("你確定要刪除這個最愛站點嗎？"),
                 actions=[
-                    ft.TextButton("好啊", data=True, on_click=handle_dlg_action_clicked),
                     ft.TextButton("算了", data=False, on_click=handle_dlg_action_clicked),
+                    ft.TextButton("行吧", data=True, on_click=handle_dlg_action_clicked),
                 ],
                 actions_alignment=ft.MainAxisAlignment.END,
             )
@@ -400,7 +474,6 @@ def main(page: ft.Page):
                     "/favorites",
                     [
                         ft.AppBar(
-                            leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
                             title=ft.Text("我的最愛"),
                             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
                             actions=[
@@ -422,7 +495,7 @@ def main(page: ft.Page):
                 content=ft.Text("你確定要刪除這個最愛群組嗎？"),
                 actions=[
                     ft.TextButton("好啊", data=True, on_click=handle_dlg_action_clicked),
-                    ft.TextButton("算了", data=False, on_click=handle_dlg_action_clicked),
+                    ft.TextButton("行吧", data=False, on_click=handle_dlg_action_clicked),
                 ],
                 actions_alignment=ft.MainAxisAlignment.END,
             )
@@ -490,25 +563,51 @@ def main(page: ft.Page):
                 )
             )
         if page.route == "/settings":
-            locationdata = config.get_location()
-            if locationdata:
-                location = f"{locationdata.latitude}, {locationdata.longitude}"
-            else:
-                location = "Failed"
+            # locationdata = config.get_location()
+            # if locationdata:
+            #     location = f"{locationdata.latitude}, {locationdata.longitude}"
+            # else:
+            #     location = "Failed"
             page.views.append(
                 ft.View(
                     "/settings",
                     [
-                        ft.AppBar(leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")), title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        ft.AppBar(title=ft.Text("設定"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
                         ft.Column([
-                            # ft.Text("這是設定頁面 WIP 哈哈"),
-                            # dropdown
+                            ft.Text("應用程式設定\n", size=20),
+                            # theme
+                            ft.Dropdown(
+                                label="主題",
+                                options=[
+                                    ft.DropdownOption(
+                                        key="system",
+                                        leading_icon=ft.Icons.BRIGHTNESS_AUTO,
+                                        text="跟隨系統",
+                                        content=ft.Text("跟隨系統"),
+                                    ),
+                                    ft.DropdownOption(
+                                        key="light",
+                                        leading_icon=ft.Icons.LIGHT_MODE,
+                                        text="淺色",
+                                        content=ft.Text("淺色"),
+                                    ),
+                                    ft.DropdownOption(
+                                        key="dark",
+                                        leading_icon=ft.Icons.DARK_MODE,
+                                        text="深色",
+                                        content=ft.Text("深色"),
+                                    ),
+                                ],
+                                on_change=lambda e: update_theme(e.control.value),
+                                value=config.config("theme"),
+                            ),
+                            # dropdown database
                             ft.Dropdown(
                                 label="選擇資料庫",
                                 options=[
-                                    ft.DropdownOption(key="twn", content=ft.Text("台灣")),
-                                    ft.DropdownOption(key="tcc", content=ft.Text("台中")),
-                                    ft.DropdownOption(key="tpe", content=ft.Text("台北")),
+                                    ft.DropdownOption(key="twn", text="台灣", content=ft.Text("台灣")),
+                                    ft.DropdownOption(key="tcc", text="台中", content=ft.Text("台中")),
+                                    ft.DropdownOption(key="tpe", text="台北", content=ft.Text("台北")),
                                 ],
                                 on_change=lambda e: config.config("provider", e.control.value, "w"),
                                 value=config.config("provider"),
@@ -542,19 +641,31 @@ def main(page: ft.Page):
                                 value=config.config("bus_error_update_time"),
                                 on_change=lambda e: config.config("bus_error_update_time", int(e.control.value), "w"),
                             ),
-                            # auto update
-                            ft.Text("自動更新資料庫"),
+                            # app update check
+                            ft.Text("應用程式更新檢查設定"),
                             ft.Dropdown(
                                 label="自動更新方式",
                                 options=[
-                                    ft.DropdownOption(key="no", content=ft.Text("不自動更新")),
-                                    ft.DropdownOption(key="check_popup", content=ft.Text("檢查更新並彈出提示")),
-                                    ft.DropdownOption(key="check_notify", content=ft.Text("檢查更新並通知")),
-                                    ft.DropdownOption(key="all", content=ft.Text("自動更新")),
+                                    ft.DropdownOption(key="no", text="不提示更新", content=ft.Text("不提示更新")),
+                                    ft.DropdownOption(key="popup", text="彈出更新提示", content=ft.Text("彈出更新提示")),
+                                    ft.DropdownOption(key="notify", text="通知更新", content=ft.Text("通知更新")),
+                                ],
+                                on_change=lambda e: config.config("app_update_check", e.control.value, "w"),
+                                value=config.config("app_update_check"),
+                            ),
+                            # auto update database
+                            ft.Text("自動更新資料庫設定"),
+                            ft.Dropdown(
+                                label="自動更新方式",
+                                options=[
+                                    ft.DropdownOption(key="no", text="不自動更新", content=ft.Text("不自動更新")),
+                                    ft.DropdownOption(key="check_popup", text="檢查更新並彈出提示", content=ft.Text("檢查更新並彈出提示")),
+                                    ft.DropdownOption(key="check_notify", text="檢查更新並通知", content=ft.Text("檢查更新並通知")),
+                                    ft.DropdownOption(key="all", text="自動更新", content=ft.Text("自動更新")),
                                     *(
                                         [
-                                            ft.DropdownOption(key="wifi", content=ft.Text("僅在 Wi-Fi 下自動更新")),
-                                            ft.DropdownOption(key="cellular", content=ft.Text("僅在行動網路下自動更新")),
+                                            ft.DropdownOption(key="wifi", text="僅在 Wi-Fi 下自動更新", content=ft.Text("僅在 Wi-Fi 下自動更新")),
+                                            ft.DropdownOption(key="cellular", text="僅在行動網路下自動更新", content=ft.Text("僅在行動網路下自動更新")),
                                         ]
                                         if config.platform == "android" else []
                                     ),
@@ -566,15 +677,16 @@ def main(page: ft.Page):
                             ft.Text("版本資訊"),
                             ft.Text(f"App: {config.app_version}\n"
                                     f"Config: {config.config_version}\n"
-                                    f"TaiwanBus: {config.taiwanbus_version}"
+                                    f"TaiwanBus: {config.taiwanbus_version}\n"
+                                    f"Update channel: {config.update_channel}"
                                     ),
                             # debug info
                             ft.Text("除錯資訊"),
                             ft.Text(f"Platform: {config.platform}\n"
                                     f"Provider: {config.config('provider')}\n"
                                     # f"Database: {str(json.load(open(os.path.join(config.datadir, ".taiwanbus", "version.json"), 'r', encoding='utf-8')).values()[0])}\n"
-                                    f"Network Status: {multiplatform.get_network_status().value}"
-                                    f"Last location: {location}"
+                                    f"Network Status: {multiplatform.get_network_status().value}\n"
+                                    # f"Last location: {location}"
                                     ),
                         ]),
                     ],
@@ -590,7 +702,7 @@ def main(page: ft.Page):
                             [
                                 ft.Text("👋", size=40, text_align="center"),
                                 ft.Text("歡迎使用TaiwanBus！", text_align="center"),
-                                ft.TextButton("繼續", on_click=lambda e: page.go("/firstrun/provider")),
+                                ft.TextButton("繼續", on_click=lambda e: page.go("/firstrun/permission")),
                             ],
                             alignment="center",
                             horizontal_alignment="center",
@@ -644,7 +756,7 @@ def main(page: ft.Page):
                 content=ft.Text("是否要立即更新資料庫？"),
                 actions=[
                     ft.TextButton("不要", on_click=ask_cancel_update_button_clicked),
-                    ft.TextButton("好啊", on_click=ask_update_button_clicked),
+                    ft.TextButton("行吧", on_click=ask_update_button_clicked),
                 ],
                 actions_alignment=ft.MainAxisAlignment.END,
             )
@@ -675,6 +787,62 @@ def main(page: ft.Page):
                                     value=config.config("auto_update"),
                                 ),
                                 ft.TextButton("繼續", on_click=lambda e: page.open(ask_dialog)),
+                            ],
+                            alignment="center",
+                            horizontal_alignment="center",
+                        ),
+                    ],
+                    vertical_alignment="center",
+                    horizontal_alignment="center",
+                )
+            )
+        if page.route == "/firstrun/permission":
+            if config.platform not in ["android", "ios", "web", "macos"]:
+                page.go("/firstrun/provider")
+                return
+            location_bar = [
+                ft.Icon(ft.Icons.LOCATION_ON),
+                ft.Text("位置權限"),
+                ft.IconButton(ft.Icons.DO_NOT_DISTURB_ON, icon_color=ft.Colors.GREY, on_click=lambda e: check_location_permission(True)),
+            ]
+            def check_location_permission(request=False):
+                nonlocal location_bar
+                try:
+                    perm = config.location_permission(request)
+                except Exception as e:
+                    print(f"Error checking location permission: {e}")
+                    perm = fg.GeolocatorPermissionStatus.DENIED_FOREVER
+                if perm == fg.GeolocatorPermissionStatus.DENIED_FOREVER:
+                    location_bar[2].icon = ft.Icons.CANCEL
+                    location_bar[2].icon_color = ft.Colors.PINK_700
+                elif perm in [fg.GeolocatorPermissionStatus.ALWAYS, fg.GeolocatorPermissionStatus.WHILE_IN_USE]:
+                    location_bar[2].icon = ft.Icons.CHECK_CIRCLE
+                    location_bar[2].icon_color = ft.Colors.GREEN_300
+                else:
+                    location_bar[2].icon = ft.Icons.DO_NOT_DISTURB_ON
+                    location_bar[2].icon_color = ft.Colors.GREY
+                page.update()
+            check_location_permission()
+            page.views.append(
+                ft.View(
+                    "/firstrun/permission",
+                    [
+                        ft.Column(
+                            [
+                                ft.Text("權限設定", text_align="center"),
+                                ft.Text("我們需要以下權限才能讓你有更好的體驗。", text_align="center", size=10, color=ft.Colors.GREY_500),
+                                ft.Column(
+                                    [
+                                        ft.Row(
+                                            location_bar,
+                                            alignment="center",
+                                            # horizontal_alignment="center",
+                                        )
+                                    ],
+                                    alignment="center",
+                                    horizontal_alignment="center",
+                                ),
+                                ft.TextButton("繼續", on_click=lambda e: page.go("/firstrun/provider")),
                             ],
                             alignment="center",
                             horizontal_alignment="center",
@@ -748,7 +916,8 @@ def main(page: ft.Page):
                 )
             )
         page.update()
-    
+
+    config.init_geolocator()
     page.overlay.append(config.gl)
 
     # 設定 NavigationBar 並處理切換事件
@@ -757,8 +926,16 @@ def main(page: ft.Page):
 
     home_view.navigation_bar = ft.NavigationBar(
         destinations=[
-            ft.NavigationBarDestination(icon=ft.Icons.HOME, label="主頁"),
-            ft.NavigationBarDestination(icon=ft.Icons.AUTORENEW, label="自動化"),
+            ft.NavigationBarDestination(
+                icon=ft.Icons.HOME_OUTLINED,
+                selected_icon=ft.Icons.HOME,
+                label="主頁"
+            ),
+            ft.NavigationBarDestination(
+                icon=ft.Icons.AUTORENEW_OUTLINED,
+                selected_icon=ft.Icons.AUTORENEW,
+                label="自動化"
+            ),
         ],
         on_change=home_on_navigation_change,
     )
@@ -772,7 +949,7 @@ def main(page: ft.Page):
         page.go(top_view.route)
 
     page.on_route_change = route_change
-    # page.on_view_pop = view_pop
+    page.on_view_pop = view_pop
     page.go(page.route)
     home_show_page(0)
 
@@ -861,7 +1038,6 @@ def main(page: ft.Page):
                         tooltip="資料庫有新更新",
                     )
                 )
-                home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
                 page.update()
         elif should_update == "all":
             updates = taiwanbus.check_database_update()
@@ -926,7 +1102,6 @@ def main(page: ft.Page):
                                 tooltip="資料庫有新更新",
                             )
                         )
-                        home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
                         page.update()
                 except Exception as e:
                     print("Error checking database update:", str(e))
@@ -947,15 +1122,66 @@ def main(page: ft.Page):
                             tooltip="資料庫有新更新",
                         )
                     )
-                    home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
                     page.update()
             except Exception as e:
                 print("Error checking database update:", str(e))
                 error_snackbar = ft.SnackBar(
-                    content=ft.Text("檢查資料庫更新時發生錯誤"),
+                    content=ft.Text("檢查資料庫更新時發生錯誤。"),
                     action="確定",
                 )
                 page.open(error_snackbar)
                 page.update()
+    
+    def open_app_update_dialog(updates, data):
+        def app_update(e):
+            page.open(ft.SnackBar(
+                content=ft.Text("正在更新"),
+            ))
+            multiplatform.update_app(data, page)
+        link = updates.split("](")[1].split(")")[0] if "](http" in updates else None
+        upddlg = ft.AlertDialog(
+            title=ft.Text("應用程式有新更新"),
+            content=ft.Markdown(updates),
+            actions=[
+                *( [ft.TextButton("網頁", on_click=lambda e: page.launch_url(link))] if link else [] ),
+                ft.TextButton("下次再說", on_click=lambda e: page.close(upddlg)),
+                ft.TextButton("更新", on_click=app_update),
+            ],
+        )
+        page.open(upddlg)
+    # check app update
+    try:
+        updates, data = config.check_update()
+        if updates:
+            home_view.appbar.actions.append(
+                ft.IconButton(
+                    ft.Icons.UPDATE,
+                    on_click=lambda e: open_app_update_dialog(updates, data),
+                    tooltip="應用程式有新版本",
+                )
+            )
+            page.update()
+            if config.config("app_update_check") == "popup":
+                open_app_update_dialog(updates, data)
+            elif config.config("app_update_check") == "notify":
+                ft.SnackBar(
+                    content=ft.Text("應用程式有新版本"),
+                    action="查看",
+                    on_action=lambda e: open_app_update_dialog(updates, data),
+                )
+        else:
+            if data:
+                page.open(ft.SnackBar(
+                    content=ft.Text("錯誤: " + data),
+                    action="確定",
+                ))
+    except Exception as e:
+        print("Failed to check app update:", str(e))
+        page.open(ft.SnackBar(
+            content=ft.Text("檢查程式更新時發生錯誤。"),
+            action="確定",
+        ))
+    home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
+    page.update()
 
 ft.app(main)
