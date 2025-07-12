@@ -16,7 +16,8 @@ PythonActivity = autoclass(activity_host_class)
 activity = PythonActivity.mActivity
 wifi_service = activity.getSystemService(Context.WIFI_SERVICE)
 WifiManager = autoclass("android.net.wifi.WifiManager")
-wifi_lock = wifi_service.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "MyWifiLock")
+wifi_lock = wifi_service.createWifiLock(WifiManager.WIFI_MODE_FULL, "TaiwanBusWifiLock")
+# WIFI_MODE_FULL_HIGH_PERF is better but idk why it is not working 
 
 def get_network_status():
     from multiplatform import NetworkStatus
