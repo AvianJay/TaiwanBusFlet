@@ -11,6 +11,8 @@ dependencies = [
   "flet==0.27.6",
   "taiwanbus==0.0.9",
   "flet-geolocator==0.1.0",
+  "requests>2.26.0",
+  "flet-permission-handler==0.1.0",
 ]
 
 [tool.flet]
@@ -49,3 +51,8 @@ dependencies = [
 
 [tool.flet.android.permission]
 "android.permission.ACCESS_NETWORK_STATE" = true
+"android.permission.ACCESS_FINE_LOCATION" = true
+"android.permission.ACCESS_COARSE_LOCATION" = true
+"android.permission.POST_NOTIFICATIONS" = true
+"android.permission.WAKE_LOCK" = true
+"android.permission.ACCESS_BACKGROUND_LOCATION" = true

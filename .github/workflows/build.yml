@@ -90,6 +90,11 @@ jobs:
         with:
           name: taiwanbusflet-android
           path: build/apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: taiwanbusflet-android
+          path: build/apk
 
   build-ios:
     runs-on: macos-latest

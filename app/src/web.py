@@ -14,6 +14,9 @@ def update_app(url, page):
 GeolocatorSettings = fg.GeolocatorWebSettings(
     fg.GeolocatorPositionAccuracy.HIGH,
 )
+<<<<<<< HEAD:app/src/web.py
 
 def wifilock(acquire):
     return False
+=======
+>>>>>>> main:src/web.py
