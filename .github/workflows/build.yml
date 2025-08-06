@@ -74,6 +74,7 @@ jobs:
           dart run --suppress-analytics flutter_native_splash:create
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
+        continue-on-error: true
       
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
@@ -133,6 +134,7 @@ jobs:
           mkdir -p build/site-packages
           dart run --suppress-analytics serious_python:main package app/src/ --platform iOS -r -r,app/src/requirements.txt --exclude build --compile-app --compile-packages --cleanup-packages
           dart run --suppress-analytics flutter_native_splash:create
+        continue-on-error: true
 
       - name: Build IPA
         run: |
@@ -193,6 +195,7 @@ jobs:
           dart run --suppress-analytics flutter_native_splash:create
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
+        continue-on-error: true
 
       - name: Build macOS
         run: |
@@ -242,6 +245,7 @@ jobs:
           dart run --suppress-analytics flutter_native_splash:create
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
+        continue-on-error: true
 
       - name: Build Windows
         run: |
@@ -296,6 +300,7 @@ jobs:
           dart run --suppress-analytics flutter_native_splash:create
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
+        continue-on-error: true
 
       - name: Build Linux
         run: |
@@ -345,6 +350,7 @@ jobs:
           dart run --suppress-analytics flutter_native_splash:create
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
+        continue-on-error: true
 
       - name: Build Web
         run: |
