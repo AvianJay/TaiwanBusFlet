@@ -87,7 +87,7 @@ jobs:
         # ID used to access action output
         id: sign_app
         with:
-          releaseDirectory: build/apk
+          releaseDirectory: build/app/outputs/flutter-apk
           signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -97,7 +97,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: taiwanbusflet-android
-          path: build/apk
+          path: build/app/outputs/flutter-apk
 
   build-ios:
     runs-on: macos-latest
