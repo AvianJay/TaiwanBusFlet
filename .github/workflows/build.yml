@@ -79,6 +79,8 @@ jobs:
       - name: Build APK
         run: |
           flutter build apk
+        env:
+          SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
       
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
@@ -141,6 +143,7 @@ jobs:
         env:
           CODE_SIGNING_REQUIRED: NO
           CODE_SIGNING_ALLOWED: NO
+          SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
 
       - name: Generate unsigned IPA
         run: |
@@ -202,6 +205,8 @@ jobs:
       - name: Build macOS
         run: |
           flutter build macos
+        env:
+          SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
 
       - name: Upload macOS
         uses: actions/upload-artifact@v4
@@ -230,10 +235,12 @@ jobs:
         run: |
           sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' app/src/config.py
           sed -i 's/update_channel = ".*"/update_channel = "nightly"/' app/src/config.py
+        shell: bash
         
       - name: Replace version in pubspec.yaml
         run: |
           sed -i "s/version: \".*\"/version: \"$COMMIT_HASH+1\"/" pubspec.yaml
+        shell: bash
 
       - name: Install dependencies
         run: |
@@ -252,6 +259,8 @@ jobs:
       - name: Build Windows
         run: |
           flutter build windows
+        env:
+          SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
 
       - name: Upload Windows
         uses: actions/upload-artifact@v4
@@ -307,6 +316,8 @@ jobs:
       - name: Build Linux
         run: |
           flutter build linux
+        env:
+          SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
 
       - name: Upload Linux
         uses: actions/upload-artifact@v4
@@ -358,6 +369,8 @@ jobs:
         run: |
           echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}, USER: ${GITHUB_REPOSITORY%/*}, PROJECT_BASE_URL: ${GITHUB_REPOSITORY#*/}"
           flutter build web --build-name "$COMMIT_HASH" --base-href /${GITHUB_REPOSITORY#*/}/
+        env:
+          SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
 
       - name: Upload Web
         uses: actions/upload-pages-artifact@v3
