@@ -69,7 +69,7 @@ jobs:
 
       - name: Run dart commands
         run: |
-          mkdir -p build/site-packages
+          mkdir -p build/site-packages build/apk
           dart run --suppress-analytics serious_python:main package app/src/ --platform Android -r -r,app/src/requirements.txt -r pyjnius --exclude build --compile-app --compile-packages --cleanup-packages
           dart run --suppress-analytics flutter_native_splash:create
         env:
@@ -199,7 +199,7 @@ jobs:
 
       - name: Build macOS
         run: |
-          flutter build macos --no-codesign
+          flutter build macos
 
       - name: Upload macOS
         uses: actions/upload-artifact@v4
@@ -231,7 +231,7 @@ jobs:
         
       - name: Replace version in pubspec.yaml
         run: |
-          sed -i '' 's/version: ".*"/version: "'$COMMIT_HASH'+1"/' pubspec.yaml
+          sed -i 's/version: ".*"/version: "'$COMMIT_HASH'+1"/' pubspec.yaml
 
       - name: Install dependencies
         run: |
@@ -300,6 +300,8 @@ jobs:
           dart run --suppress-analytics flutter_native_splash:create
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
+          CODE_SIGNING_REQUIRED: NO
+          CODE_SIGNING_ALLOWED: NO
         continue-on-error: true
 
       - name: Build Linux
@@ -355,7 +357,7 @@ jobs:
       - name: Build Web
         run: |
           echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}, USER: ${GITHUB_REPOSITORY%/*}, PROJECT_BASE_URL: ${GITHUB_REPOSITORY#*/}"
-          flutter build web --build-name "$COMMIT_HASH" --base-href ${GITHUB_REPOSITORY#*/}
+          flutter build web --build-name "$COMMIT_HASH" --base-href /${GITHUB_REPOSITORY#*/}/
 
       - name: Upload Web
         uses: actions/upload-pages-artifact@v3
