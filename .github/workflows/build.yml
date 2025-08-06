@@ -69,6 +69,7 @@ jobs:
 
       - name: Run dart commands
         run: |
+          mkdir build/site-packages
           dart run --suppress-analytics serious_python:main package app/src/ --platform Android -r -r,app/src/requirements.txt -r pyjnius --exclude build --compile-app --compile-packages --cleanup-packages
           dart run --suppress-analytics flutter_native_splash:create
         env:
@@ -112,7 +113,7 @@ jobs:
         
       - name: Replace version in pubspec.yaml
         run: |
-          sed -i 's/version: ".*"/version: "'$COMMIT_HASH'+1"/' pubspec.yaml
+          sed -i '' 's/version: ".*"/version: "'$COMMIT_HASH'+1"/' pubspec.yaml
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
@@ -129,6 +130,7 @@ jobs:
 
       - name: Run dart commands
         run: |
+          mkdir build/site-packages
           dart run --suppress-analytics serious_python:main package app/src/ --platform iOS -r -r,app/src/requirements.txt --exclude build --compile-app --compile-packages --cleanup-packages
           dart run --suppress-analytics flutter_native_splash:create
 
@@ -170,7 +172,7 @@ jobs:
         
       - name: Replace version in pubspec.yaml
         run: |
-          sed -i 's/version: ".*"/version: "'$COMMIT_HASH'+1"/' pubspec.yaml
+          sed -i '' 's/version: ".*"/version: "'$COMMIT_HASH'+1"/' pubspec.yaml
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
@@ -184,6 +186,7 @@ jobs:
       
       - name: Run dart commands
         run: |
+          mkdir build/site-packages
           dart run --suppress-analytics serious_python:main package app/src/ --platform macOS -r -r,app/src/requirements.txt --exclude build --compile-app --compile-packages --cleanup-packages
           dart run --suppress-analytics flutter_native_splash:create
         env:
@@ -215,12 +218,12 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' app/src/config.py
-          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' app/src/config.py
+          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' app/src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' app/src/config.py
         
       - name: Replace version in pubspec.yaml
         run: |
-          sed -i 's/version: ".*"/version: "'$COMMIT_HASH'+1"/' pubspec.yaml
+          sed -i '' 's/version: ".*"/version: "'$COMMIT_HASH'+1"/' pubspec.yaml
 
       - name: Install dependencies
         run: |
@@ -229,6 +232,7 @@ jobs:
       
       - name: Run dart commands
         run: |
+          mkdir build/site-packages
           dart run --suppress-analytics serious_python:main package app/src/ --platform Windows -r -r,app/src/requirements.txt --exclude build --compile-app --compile-packages --cleanup-packages
           dart run --suppress-analytics flutter_native_splash:create
         env:
@@ -260,8 +264,8 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' app/src/config.py
-          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' app/src/config.py
+          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' app/src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' app/src/config.py
         
       - name: Replace version in pubspec.yaml
         run: |
@@ -279,6 +283,7 @@ jobs:
       
       - name: Run dart commands
         run: |
+          mkdir build/site-packages
           dart run --suppress-analytics serious_python:main package app/src/ --platform Linux -r -r,app/src/requirements.txt --exclude build --compile-app --compile-packages --cleanup-packages
           dart run --suppress-analytics flutter_native_splash:create
         env:
@@ -310,8 +315,8 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' app/src/config.py
-          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' app/src/config.py
+          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' app/src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' app/src/config.py
         
       - name: Replace version in pubspec.yaml
         run: |
@@ -324,6 +329,7 @@ jobs:
       
       - name: Run dart commands
         run: |
+          mkdir build/site-packages
           dart run --suppress-analytics serious_python:main package app/src/ --platform Pyodide -r -r,app/src/requirements.txt --exclude build --compile-app --compile-packages --cleanup-packages
           dart run --suppress-analytics flutter_native_splash:create
         env:
