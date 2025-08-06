@@ -76,6 +76,10 @@ jobs:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
         continue-on-error: true
       
+      - name: Build APK
+        run: |
+          flutter build apk
+      
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
         # ID used to access action output
@@ -87,11 +91,6 @@ jobs:
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEYSTORE_PASSWORD }}
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: taiwanbusflet-android
-          path: build/apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -139,6 +138,9 @@ jobs:
       - name: Build IPA
         run: |
           flutter build ios --build-name '$COMMIT_HASH' --release --no-codesign
+        env:
+          CODE_SIGNING_REQUIRED: NO
+          CODE_SIGNING_ALLOWED: NO
 
       - name: Generate unsigned IPA
         run: |
@@ -231,7 +233,7 @@ jobs:
         
       - name: Replace version in pubspec.yaml
         run: |
-          sed -i 's/version: ".*"/version: "'$COMMIT_HASH'+1"/' pubspec.yaml
+          sed -i "s/version: \".*\"/version: \"$COMMIT_HASH+1\"/" pubspec.yaml
 
       - name: Install dependencies
         run: |
@@ -300,8 +302,6 @@ jobs:
           dart run --suppress-analytics flutter_native_splash:create
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
-          CODE_SIGNING_REQUIRED: NO
-          CODE_SIGNING_ALLOWED: NO
         continue-on-error: true
 
       - name: Build Linux
