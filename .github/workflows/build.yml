@@ -211,11 +211,16 @@ jobs:
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
 
+      - name: Get app to upload
+        run: |
+          mkdir -p build/macos/toUpload
+          cp -r build/macos/Build/Products/Release/TWBus.app build/macos/toUpload
+
       - name: Upload macOS
         uses: actions/upload-artifact@v4
         with:
           name: taiwanbusflet-macos
-          path: build/macos
+          path: build/macos/toUpload
       
   build-windows:
     runs-on: windows-latest
