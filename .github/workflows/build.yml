@@ -315,18 +315,18 @@ jobs:
       
       - name: Run dart commands
         run: |
-          mkdir -p build/site-packages
+          mkdir -p build/linux/x64/release/build/site-packages
           dart run --suppress-analytics serious_python:main package app/src/ --platform Linux -r -r,app/src/requirements.txt --exclude build --compile-app --compile-packages --cleanup-packages
           dart run --suppress-analytics flutter_native_splash:create
         env:
-          SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
+          SERIOUS_PYTHON_SITE_PACKAGES: build/linux/x64/release/build/site-packages
         continue-on-error: true
 
       - name: Build Linux
         run: |
           flutter build linux --build-name '$COMMIT_HASH'
         env:
-          SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
+          SERIOUS_PYTHON_SITE_PACKAGES: build/linux/x64/release/build/site-packages
 
       - name: Upload Linux
         uses: actions/upload-artifact@v4
