@@ -81,7 +81,7 @@ jobs:
       
       - name: Build APK
         run: |
-          flutter build apk
+          flutter build apk --build-name '$COMMIT_HASH'
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
       
@@ -100,7 +100,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: taiwanbusflet-android
-          path: build/app/outputs/flutter-apk
+          path: build/app/outputs/flutter-apk/app-release-signed.apk
 
   build-ios:
     runs-on: macos-latest
@@ -142,7 +142,7 @@ jobs:
 
       - name: Build IPA
         run: |
-          flutter build ios --build-name '$COMMIT_HASH' --release --no-codesign
+          flutter build ios --build-name '$COMMIT_HASH' --no-codesign --no-version-check --suppress-analytics
         env:
           CODE_SIGNING_REQUIRED: NO
           CODE_SIGNING_ALLOWED: NO
@@ -257,11 +257,12 @@ jobs:
           dart run --suppress-analytics flutter_native_splash:create
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
+        shell: bash
         continue-on-error: true
 
       - name: Build Windows
         run: |
-          flutter build windows
+          flutter build windows --no-version-check --suppress-analytics --build-name '$COMMIT_HASH'
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
 
@@ -318,7 +319,7 @@ jobs:
 
       - name: Build Linux
         run: |
-          flutter build linux
+          flutter build linux --build-name '$COMMIT_HASH'
         env:
           SERIOUS_PYTHON_SITE_PACKAGES: build/site-packages
 
