@@ -142,7 +142,7 @@ jobs:
 
       - name: Build IPA
         run: |
-          flutter build ios --build-name '$COMMIT_HASH' --no-codesign --no-version-check --suppress-analytics
+          flutter build xcarchive --build-name '$COMMIT_HASH' --no-version-check --suppress-analytics
         env:
           CODE_SIGNING_REQUIRED: NO
           CODE_SIGNING_ALLOWED: NO
