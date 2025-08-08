@@ -62,6 +62,9 @@ jobs:
           target: android-33
           ndk: 25.2.9519653
 
+      - name: Install build-tools 29.0.3
+        run: yes | sdkmanager "build-tools;29.0.3"        
+
       - name: Install dependencies
         run: |
           python -m pip install -r app/src/requirements.txt
