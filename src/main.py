@@ -531,6 +531,7 @@ def main(page: ft.Page):
                     ) for fav in favorites.keys()
                 ]
             def update_favorite_groups():
+                # print("Tiggered update_favorite_groups")
                 nonlocal favorite_groups
                 favorite_groups = [
                     ft.Dismissible(
@@ -546,6 +547,8 @@ def main(page: ft.Page):
                         },
                     ) for fav in config.favorite_stop().keys()
                 ]
+                page.views[-1].controls[1].controls = favorite_groups
+                page.update()
             page.views.append(
                 ft.View(
                     "/favorites/manage",
