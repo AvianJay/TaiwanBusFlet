@@ -494,8 +494,8 @@ def main(page: ft.Page):
                 title=ft.Text("請確認"),
                 content=ft.Text("你確定要刪除這個最愛群組嗎？"),
                 actions=[
-                    ft.TextButton("好啊", data=True, on_click=handle_dlg_action_clicked),
-                    ft.TextButton("行吧", data=False, on_click=handle_dlg_action_clicked),
+                    ft.TextButton("再想想", data=False, on_click=handle_dlg_action_clicked),
+                    ft.TextButton("行吧", data=True, on_click=handle_dlg_action_clicked),
                 ],
                 actions_alignment=ft.MainAxisAlignment.END,
             )
