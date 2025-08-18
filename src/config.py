@@ -220,6 +220,23 @@ def check_update():
             if res.get("workflow_runs")[0].get("status") == "completed":
                 return f"### New commit: {hash}\n\n**Full Changelog**: [{app_version}...{hash}](https://github.com/AvianJay/TaiwanBusFlet/compare/{app_version}...{hash})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
         return False, None
+    elif config.UPDATE_CHANNEL == "developer":
+        return False, None  # No updates for developer channel
+    elif config.UPDATE_CHANNEL == "release":
+        headers = {
+            "User-Agent": "TaiwanBusFlet/" + app_version
+        }
+        r = requests.get("https://api.github.com/repos/AvianJay/TaiwanBusFlet/releases", headers=headers,  timeout=5)
+        r.raise_for_status()
+        releases = r.json()
+        if releases:
+            latest_version = releases[0]["tag_name"]
+            # get apk
+            for asset in releases[0]["assets"]:
+                if asset["content_type"] == "application/vnd.android.package-archive":
+                    apk_url = asset["browser_download_url"]
+            if latest_version != app_version:
+                return releases[0]["body"] + f"\n[original]({releases[0]['html_url']})", apk_url
     return False, None
 
 # thanks stackoverflow
