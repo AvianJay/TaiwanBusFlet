@@ -73,7 +73,7 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i '' 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Set up Python 3.x
@@ -120,7 +120,7 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i '' 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i '' 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Set up Python 3.x
@@ -160,7 +160,7 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Install dependencies
@@ -195,7 +195,7 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
       
       - name: Patch for linux build
@@ -235,7 +235,7 @@ jobs:
 
       - name: Replace version and update channel in config.py
         run: |
-          sed -i 's/app_version = ".*"/app_version = "'$COMMIT_HASH'"/' src/config.py
+          sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Install dependencies
