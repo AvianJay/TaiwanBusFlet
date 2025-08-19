@@ -15,7 +15,9 @@ config_version = 7
 # No package metadata when complied
 # taiwanbus.__version__ will be added in 0.1.0
 taiwanbus_version = "0.0.9"
-update_channel = "dev"
+update_channel = "developer"
+hash = "unknown"
+full_version = f"{app_version}-{update_channel}({hash})"
 
 # some global variables
 current_bus = None
@@ -220,9 +222,9 @@ def check_update():
             if res.get("workflow_runs")[0].get("status") == "completed":
                 return f"### New commit: {hash}\n\n**Full Changelog**: [{app_version}...{hash}](https://github.com/AvianJay/TaiwanBusFlet/compare/{app_version}...{hash})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
         return False, None
-    elif config.UPDATE_CHANNEL == "developer":
+    elif update_channel == "developer":
         return False, None  # No updates for developer channel
-    elif config.UPDATE_CHANNEL == "release":
+    elif update_channel == "release":
         headers = {
             "User-Agent": "TaiwanBusFlet/" + app_version
         }
