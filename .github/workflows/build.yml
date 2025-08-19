@@ -87,6 +87,10 @@ jobs:
           pip install poetry
           poetry install
 
+      - name: Install iOS 17 runtime
+        run: |
+          sudo xcodebuild -downloadPlatform iOS
+
       - name: Build IPA
         run: |
           poetry run flet build ipa --verbose --no-rich-output --compile-app --compile-packages
