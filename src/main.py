@@ -1,5 +1,6 @@
 import flet as ft
 import taiwanbus
+from taiwanbus import api
 import taiwanbus.exceptions as tbe
 import asyncio
 import config
@@ -65,7 +66,7 @@ def main(page: ft.Page):
         page.open(adddialog)
     
     def add_to_home_screen(routekey, pathid, stopid):
-        route = asyncio.run(taiwanbus.fetch_stops_by_route(routekey))
+        route = api.fetch_stops_by_route(routekey)
         stopname = next((s["stop_name"] for s in route if s["stop_id"] == int(stopid)), "未知站點")
         if not stopname:
             stopname = "未知站點"
@@ -111,7 +112,7 @@ def main(page: ft.Page):
         bus_timer_text.value = "正在更新"
         bus_view.controls.clear()
         try:
-            route_info_list = asyncio.run(taiwanbus.fetch_route(config.current_bus["routekey"]))
+            route_info_list = api.fetch_route(config.current_bus["routekey"])
             if len(route_info_list) == 0:
                 page.go("/")
                 snackbar = ft.SnackBar(
@@ -121,7 +122,7 @@ def main(page: ft.Page):
                 page.open(snackbar)
                 return
             route_info = route_info_list[0]
-            bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus["routekey"]))
+            bus_info = api.get_complete_bus_info(config.current_bus["routekey"])
         except Exception as e:
             page.go("/")
             snackbar = ft.SnackBar(
@@ -227,10 +228,8 @@ def main(page: ft.Page):
             paths[selindex].scroll_to(key=str(selstop), duration=500)
         while page.route == current_route:
             try:
-                bus_info = asyncio.run(
-                    taiwanbus.get_complete_bus_info(
-                        config.current_bus["routekey"]
-                    )
+                bus_info = api.get_complete_bus_info(
+                    config.current_bus["routekey"]
                 )
             except Exception as e:
                 print("Error:", str(e))
@@ -243,10 +242,8 @@ def main(page: ft.Page):
                     if not page.route == current_route:
                         break
                     try:
-                        bus_info = asyncio.run(
-                            taiwanbus.get_complete_bus_info(
-                                config.current_bus["routekey"]
-                            )
+                        bus_info = api.get_complete_bus_info(
+                            config.current_bus["routekey"]
                         )
                     except Exception as e:
                         print("Error:", str(e))
@@ -401,7 +398,7 @@ def main(page: ft.Page):
         if page.route == "/search":
             suggestions = []
             try:
-                routes = asyncio.run(taiwanbus.fetch_routes_by_name(""))
+                routes = api.fetch_routes_by_name("")
             except tbe.DatabaseNotFoundError as e:
                 page.open(ft.SnackBar(
                     content=ft.Text("找不到資料庫，請先更新資料庫！"),
@@ -412,10 +409,10 @@ def main(page: ft.Page):
             for route in routes:
                 suggestions.append(
                     ft.AutoCompleteSuggestion(
-                        key=f"{route['provider']}-{route['route_name']}/ \
-                            {route['route_key']}",
-                        value=f"{route['provider']}-{route['route_name']}/ \
-                            {route['route_key']}"
+                        key=f"{route['provider']}-{route['route_name']}/"
+                            f"{route['route_key']}",
+                        value=f"{route['provider']}-{route['route_name']}/"
+                            f"{route['route_key']}"
                         ),
                     )
             page.views.append(
@@ -483,8 +480,8 @@ def main(page: ft.Page):
                     tbs = []
                     for id in favorites[k]:
                         stops[id['stopid']] = id
-                        route_info = asyncio.run(taiwanbus.fetch_route(id['routekey']))[0]
-                        route_stops = asyncio.run(taiwanbus.fetch_stops_by_route(id['routekey']))
+                        route_info = api.fetch_route(id['routekey'])[0]
+                        route_stops = api.fetch_stops_by_route(id['routekey'])
                         for s in route_stops:
                             if str(s['stop_id']) == str(id['stopid']):
                                 stops[id['stopid']]['stopinfo'] = s
@@ -1036,7 +1033,7 @@ def main(page: ft.Page):
     home_show_page(0)
 
     async def update_database_async():
-        await asyncio.to_thread(taiwanbus.update_database)
+        await asyncio.to_thread(api.update_database)
 
     def on_update_click(e):
         print("Clicked update button")
@@ -1068,7 +1065,7 @@ def main(page: ft.Page):
 
     def open_update_dialog(e=None):
         nonlocal home_view
-        updates = taiwanbus.check_database_update()
+        updates = api.check_database_update()
         if any(updates.values()):
             update_message = ""
             for key, value in updates.items():

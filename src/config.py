@@ -3,6 +3,7 @@ import json
 import math
 import requests
 import taiwanbus
+from taiwanbus import api
 import flet as ft
 import flet_geolocator as fg
 import threading
@@ -11,10 +12,7 @@ import threading
 # info
 app_version = "0.1.0"
 config_version = 7
-# taiwanbus_version = version("taiwanbus")
-# No package metadata when complied
-# taiwanbus.__version__ will be added in 0.1.0
-taiwanbus_version = "0.0.9"
+taiwanbus_version = taiwanbus.__version__
 update_channel = "developer"
 hash = "unknown"
 if hash == "unknown":
@@ -29,9 +27,7 @@ current_bus = None
 
 platform = os.getenv("FLET_PLATFORM")
 datadir = os.getenv("FLET_APP_STORAGE_DATA", ".")
-taiwanbus.update_database_dir(datadir)
-# taiwanbus bug, will be fixed in 0.1.0
-taiwanbus.home = os.path.join(datadir, ".taiwanbus")
+api.update_database_dir(datadir)
 
 # config
 default_config = {
@@ -87,7 +83,7 @@ if _config.get("config_version", 0) < config_version:
     json.dump(_config, open(config_path, "w"))
     print("Done.")
 
-taiwanbus.update_provider(_config.get("provider"))
+api.update_provider(api.Provider(_config.get("provider")))
 
 
 def config(key, value=None, mode="r"):
