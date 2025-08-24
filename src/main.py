@@ -663,13 +663,16 @@ def main(page: ft.Page):
                                 value=config.config("provider"),
                             ),
                             # hint
-                            ft.Text("台灣: 有全台灣的公車資料，但是沒有站點資料，取得公車資訊時消耗較多流量\n" \
+                            ft.Text(
+                                "台灣: 有全台灣的公車資料，但是沒有站點資料，取得公車資訊時消耗較多流量\n" \
                                 "台中, 台北: 僅有台中和台北的公車資料，且有站點資料，取得公車資訊時消耗較少流量"
-                                , size=10, color=ft.Colors.GREY_500),
+                                , size=10, color=ft.Colors.GREY_500
+                            ),
                             # always show second
-                            ft.Switch(label="總是顯示秒數",
+                            ft.Switch(
+                                label="總是顯示秒數",
                                 on_change=lambda e: config.config("always_show_second", e.control.value, "w"),
-                                 value=config.config("always_show_second"),
+                                value=config.config("always_show_second"),
                             ),
                             # bus update time
                             ft.Text("公車更新頻率"),
@@ -734,7 +737,6 @@ def main(page: ft.Page):
                             ft.Text("除錯資訊"),
                             ft.Text(f"Platform: {config.platform}\n"
                                     f"Provider: {config.config('provider')}\n"
-                                    # f"Database: {str(json.load(open(os.path.join(config.datadir, ".taiwanbus", "version.json"), 'r', encoding='utf-8')).values()[0])}\n"
                                     f"Network Status: {multiplatform.get_network_status().value}\n"
                                     # f"Last location: {location}"
                                     ),
