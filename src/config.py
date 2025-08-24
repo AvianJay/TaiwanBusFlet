@@ -9,7 +9,7 @@ import threading
 # from importlib.metadata import version
 
 # info
-app_version = "0.0.1"
+app_version = "0.1.0"
 config_version = 7
 # taiwanbus_version = version("taiwanbus")
 # No package metadata when complied
