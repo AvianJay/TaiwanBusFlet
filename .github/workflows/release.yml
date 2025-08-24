@@ -60,7 +60,7 @@ jobs:
           path: build/apk
 
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -83,10 +83,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
-
-      - name: Install iOS 17 runtime
-        run: |
-          sudo xcodebuild -downloadPlatform iOS
 
       - name: Build IPA
         run: |
