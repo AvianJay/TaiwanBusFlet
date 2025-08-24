@@ -87,6 +87,17 @@ jobs:
           pip install poetry
           poetry install
 
+      - name: Install iOS runtime
+        run: |
+          for i in 1 2 3; do
+            if sudo xcodebuild -downloadPlatform iOS; then
+              break
+            else
+              echo "Retry $i..."
+              sleep 30
+            fi
+          done
+
       - name: Build IPA
         run: |
           poetry run flet build ipa --verbose --no-rich-output --compile-app --compile-packages
