@@ -971,27 +971,26 @@ def main(page: ft.Page):
     page.overlay.append(config.gl)
 
     # 設定 NavigationBar 並處理切換事件
-    def home_on_navigation_change(e):
-        home_show_page(e.control.selected_index)
+    # def home_on_navigation_change(e):
+    #     home_show_page(e.control.selected_index)
 
-    home_view.navigation_bar = ft.NavigationBar(
-        destinations=[
-            ft.NavigationBarDestination(
-                icon=ft.Icons.HOME_OUTLINED,
-                selected_icon=ft.Icons.HOME,
-                label="主頁"
-            ),
-            ft.NavigationBarDestination(
-                icon=ft.Icons.AUTORENEW_OUTLINED,
-                selected_icon=ft.Icons.AUTORENEW,
-                label="自動化"
-            ),
-        ],
-        on_change=home_on_navigation_change,
-    )
+    # home_view.navigation_bar = ft.NavigationBar(
+    #     destinations=[
+    #         ft.NavigationBarDestination(
+    #             icon=ft.Icons.HOME_OUTLINED,
+    #             selected_icon=ft.Icons.HOME,
+    #             label="主頁"
+    #         ),
+    #         ft.NavigationBarDestination(
+    #             icon=ft.Icons.AUTORENEW_OUTLINED,
+    #             selected_icon=ft.Icons.AUTORENEW,
+    #             label="自動化"
+    #         ),
+    #     ],
+    #     on_change=home_on_navigation_change,
+    # )
     page.update()
 
-    
     def view_pop(e):
         print("View pop:", e.view)
         page.views.pop()
@@ -1033,7 +1032,7 @@ def main(page: ft.Page):
         page.open(updated_snackbar)
         home_view.appbar.actions = [ft.IconButton(ft.Icons.SETTINGS, on_click=lambda e: page.go("/settings"))]
         page.update()
-    
+
     def open_update_dialog(e=None):
         nonlocal home_view
         updates = taiwanbus.check_database_update()
@@ -1232,5 +1231,6 @@ def main(page: ft.Page):
         ))
     home_view.appbar.actions.reverse()  # 確保更新按鈕在最前面
     page.update()
+
 
 ft.app(main)
