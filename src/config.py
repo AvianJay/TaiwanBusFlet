@@ -17,6 +17,11 @@ config_version = 7
 taiwanbus_version = "0.0.9"
 update_channel = "developer"
 hash = "unknown"
+if hash == "unknown":
+    try:
+        hash = os.popen("git rev-parse --short HEAD").read().strip()
+    except Exception as e:
+        print("Failed to get git hash:", str(e))
 full_version = f"{app_version}-{update_channel}({hash})"
 
 # some global variables
