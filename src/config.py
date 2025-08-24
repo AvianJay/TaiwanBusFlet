@@ -35,10 +35,11 @@ default_config = {
     "bus_update_time": 10,
     "bus_error_update_time": 1,
     "always_show_second": False,
-    "auto_update": "check_popup", # no, check_popup, check_notify, all, wifi, cellular
+    # no, check_popup, check_notify, all, wifi, cellular
+    "auto_update": "check_popup",
     "firstrun": True,
     "theme": "system",
-    "app_update_check": "popup", # no, notify, popup
+    "app_update_check": "popup",  # no, notify, popup
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None
@@ -48,14 +49,17 @@ try:
         _config = json.load(open(config_path, "r"))
         # Todo: verify
         if not isinstance(_config, dict):
-            print("Config file is not a valid JSON object, resetting to default config.")
+            print("Config file is not a valid JSON object, \
+                resetting to default config.")
             _config = default_config.copy()
         for key in _config.keys():
             if not isinstance(_config[key], type(default_config[key])):
-                print(f"Config key '{key}' has an invalid type, resetting to default value.")
+                print(f"Config key '{key}' has an invalid type, \
+                      resetting to default value.")
                 _config[key] = default_config[key]
         if "config_version" not in _config:
-            print("Config file does not have 'config_version', resetting to default config.")
+            print("Config file does not have 'config_version', \
+                resetting to default config.")
             _config = default_config.copy()
     else:
         _config = default_config.copy()
@@ -65,9 +69,13 @@ except ValueError:
     json.dump(_config, open(config_path, "w"))
 
 if _config.get("config_version", 0) < config_version:
-    print("Updating config file from version", _config.get("config_version", 0), "to version", config_version)
+    print("Updating config file from version",
+          _config.get("config_version", 0),
+          "to version",
+          config_version
+          )
     for k in default_config.keys():
-        if _config.get(k) == None:
+        if _config.get(k) is None:
             _config[k] = default_config[k]
     _config["config_version"] = config_version
     print("Saving...")
@@ -75,6 +83,7 @@ if _config.get("config_version", 0) < config_version:
     print("Done.")
 
 taiwanbus.update_provider(_config.get("provider"))
+
 
 def config(key, value=None, mode="r"):
     if mode == "r":
@@ -86,10 +95,13 @@ def config(key, value=None, mode="r"):
     else:
         raise ValueError(f"Invalid mode: {mode}")
 
+
 def get_time_text(stop: dict):
     if stop.get("msg"):
         stop["msg"] = "末班\n駛離" if stop["msg"] == "末班駛離" else stop["msg"]
-        return stop["msg"], ft.Colors.with_opacity(0.1, ft.Colors.PRIMARY), ft.Colors.PRIMARY
+        return stop["msg"], \
+            ft.Colors.with_opacity(0.1, ft.Colors.PRIMARY), \
+            ft.Colors.PRIMARY
     elif stop["sec"] <= 0:
         return "進站中", ft.Colors.RED_900, ft.Colors.WHITE
     else:
@@ -97,8 +109,18 @@ def get_time_text(stop: dict):
             return str(stop["sec"]) + "秒", ft.Colors.RED_700, ft.Colors.WHITE
         else:
             minute = stop["sec"] // 60
-            second_str = "\n" + str(stop["sec"] % 60) + "秒" if config("always_show_second") else ""
-            return str(minute) + "分" + second_str, ft.Colors.RED_500 if minute < 3 else ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), ft.Colors.WHITE if minute < 3 else ft.Colors.PRIMARY
+            second_str = (
+                "\n" + str(stop["sec"] % 60) + "秒"
+                if config("always_show_second") else ""
+            )
+            return (
+                str(minute) + "分" + second_str,
+                ft.Colors.RED_500 if minute < 3 else ft.Colors.with_opacity(
+                    0.2, ft.Colors.PRIMARY
+                ),
+                ft.Colors.WHITE if minute < 3 else ft.Colors.PRIMARY,
+            )
+
 
 def read_favorites():
     try:
@@ -107,32 +129,44 @@ def read_favorites():
     except FileNotFoundError:
         return {}
 
+
 def favorite_stop(favorite_name=None, mode="r", data=None):
-    if mode == "r": # read
+    if mode == "r":  # read
         favorites = read_favorites()
         if favorite_name:
             return favorites.get(favorite_name, [])
         else:
             return favorites
-    elif mode == "s": # set
+    elif mode == "s":  # set
         if data is None:
             raise ValueError("data is None")
         if not favorite_name:
             raise ValueError("favorite_name is None")
-        with open(os.path.join(datadir, "favorite.json"), "r+", encoding="utf-8") as f:
+        with open(
+            os.path.join(datadir, "favorite.json"),
+            "r+",
+            encoding="utf-8"
+        ) as f:
             current_favorite = json.load(f)
             current_favorite[favorite_name] = data
             f.seek(0)
             json.dump(current_favorite, f)
             f.truncate()
         return True
-    elif mode == "d": # delete
+    elif mode == "d":  # delete
         if not favorite_name:
             raise ValueError("favorite_name is None")
-        with open(os.path.join(datadir, "favorite.json"), "r+", encoding="utf-8") as f:
+        with open(
+            os.path.join(datadir, "favorite.json"),
+            "r+",
+            encoding="utf-8"
+        ) as f:
             current_favorite = json.load(f)
             if data:
-                current_favorite_with_name = current_favorite.get(favorite_name, [])
+                current_favorite_with_name = current_favorite.get(
+                    favorite_name,
+                    []
+                )
                 ran = False
                 for item in current_favorite_with_name:
                     if item.get("stopid") == data.get("stopid"):
@@ -140,7 +174,9 @@ def favorite_stop(favorite_name=None, mode="r", data=None):
                         ran = True
                         break
                 if not ran:
-                    raise ValueError(f"Data '{data}' not found in the favorite list.")
+                    raise ValueError(
+                        f"Data '{data}' not found in the favorite list."
+                    )
                 current_favorite[favorite_name] = current_favorite_with_name
             else:
                 if favorite_name not in current_favorite:
@@ -153,10 +189,12 @@ def favorite_stop(favorite_name=None, mode="r", data=None):
     else:
         raise ValueError("Invalid mode" + mode)
 
+
 if not os.path.exists(os.path.join(datadir, "favorite.json")):
     json.dump({}, open(os.path.join(datadir, "favorite.json"), "w"))
 
 position_change_events = []
+
 
 def handle_position_change(e):
     print("Position changed:", e)
@@ -166,15 +204,21 @@ def handle_position_change(e):
         except Exception as ex:
             print("Error in position change event:", ex)
 
+
 gl = None
+
 
 def init_geolocator():
     global gl
     gl = fg.Geolocator(
-        location_settings=fg.GeolocatorSettings(fg.GeolocatorPositionAccuracy.LOW, distance_filter=1),
+        location_settings=fg.GeolocatorSettings(
+            fg.GeolocatorPositionAccuracy.LOW,
+            distance_filter=1
+        ),
         on_position_change=handle_position_change,
         on_error=lambda e: print("Geolocator error:", e),
     )
+
 
 def location_permission(request=True):
     try:
@@ -183,20 +227,34 @@ def location_permission(request=True):
         print(gl.get_permission_status())
         print("is_location_service_enabled:", gl.is_location_service_enabled())
         return gl.get_permission_status()
-    except:
+    except Exception as e:
+        print("Location Permission Request Failed:", str(e))
         return False
+
 
 def get_location(force=False):
     import multiplatform
     try:
-        if location_permission() not in [fg.GeolocatorPermissionStatus.ALWAYS, fg.GeolocatorPermissionStatus.WHILE_IN_USE]:
+        if location_permission() not in [
+            fg.GeolocatorPermissionStatus.ALWAYS,
+            fg.GeolocatorPermissionStatus.WHILE_IN_USE
+        ]:
             print("Location permission not granted.")
             return None
         try:
             if force:
-                return gl.get_current_position(location_settings=multiplatform.GeolocatorSettings())
+                return gl.get_current_position(
+                    location_settings=multiplatform.GeolocatorSettings()
+                )
             else:
-                threading.Thread(target=gl.get_current_position, daemon=True, args=(fg.GeolocatorPositionAccuracy.HIGH,multiplatform.GeolocatorSettings)).start()
+                threading.Thread(
+                    target=gl.get_current_position,
+                    daemon=True,
+                    args=(
+                        fg.GeolocatorPositionAccuracy.HIGH,
+                        multiplatform.GeolocatorSettings
+                    )
+                ).start()
                 return gl.get_last_known_position()
         except Exception as e:
             print("Error getting location:", e)
@@ -205,13 +263,18 @@ def get_location(force=False):
         print("Error getting location:", e)
         return None
 
+
 # check updates
 def check_update():
     global app_version
     if update_channel == "nightly":
-        workflows_url = "https://api.github.com/repos/AvianJay/TaiwanBusFlet/actions/workflows"
+        workflows_url = "https://api.github.com/repos/" \
+            "AvianJay/TaiwanBusFlet/actions/workflows"
         res = requests.get(workflows_url).json()
-        workflow_url = next((s["url"] for s in res.get("workflows") if s["name"] == "Build"), None)
+        workflow_url = next(
+            (s["url"] for s in res.get("workflows") if s["name"] == "Build"),
+            None
+        )
         if not workflow_url:
             return False, "Workflow not found"
         workflow_url += "/runs?per_page=1"
@@ -220,7 +283,14 @@ def check_update():
         app_version = app_version.strip().lower()
         if not hash == app_version:
             if res.get("workflow_runs")[0].get("status") == "completed":
-                return f"### New commit: {hash}\n\n**Full Changelog**: [{app_version}...{hash}](https://github.com/AvianJay/TaiwanBusFlet/compare/{app_version}...{hash})", f"https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-{platform}.zip"
+                return (
+                    f"### New commit: {hash}\n\n"
+                    f"**Full Changelog**: [{app_version}...{hash}] "
+                    "(https://github.com/AvianJay/TaiwanBusFlet/compare/",
+                    f"{app_version}...{hash})",
+                    "https://nightly.link/AvianJay/TaiwanBusFlet/",
+                    f"workflows/build/main/taiwanbusflet-{platform}.zip"
+                )
         return False, None
     elif update_channel == "developer":
         return False, None  # No updates for developer channel
@@ -228,18 +298,27 @@ def check_update():
         headers = {
             "User-Agent": "TaiwanBusFlet/" + app_version
         }
-        r = requests.get("https://api.github.com/repos/AvianJay/TaiwanBusFlet/releases", headers=headers,  timeout=5)
+        r = requests.get(
+            "https://api.github.com/repos/AvianJay/TaiwanBusFlet/releases",
+            headers=headers,
+            timeout=5
+        )
+        content_types = {
+            "android": "application/vnd.android.package-archive",
+        }
         r.raise_for_status()
         releases = r.json()
         if releases:
             latest_version = releases[0]["tag_name"]
             # get apk
             for asset in releases[0]["assets"]:
-                if asset["content_type"] == "application/vnd.android.package-archive":
+                if asset["content_type"] == content_types.get(platform):
                     apk_url = asset["browser_download_url"]
             if latest_version != app_version:
-                return releases[0]["body"] + f"\n[original]({releases[0]['html_url']})", apk_url
+                return releases[0]["body"] + \
+                    f"\n[original]({releases[0]['html_url']})", apk_url
     return False, None
+
 
 # thanks stackoverflow
 def measure(lat1, lon1, lat2, lon2):

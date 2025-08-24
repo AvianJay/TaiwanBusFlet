@@ -7,8 +7,7 @@ import time
 import threading
 import flet_geolocator as fg
 import multiplatform
-import os
-import json
+
 
 # Todo: 弄成多個檔案
 
@@ -123,13 +122,14 @@ def main(page: ft.Page):
                 return
             route_info = route_info_list[0]
             bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus["routekey"]))
-        except:
+        except Exception as e:
             page.go("/")
             snackbar = ft.SnackBar(
                 content=ft.Text("無法讀取公車資訊！"),
                 action="確定",
             )
             page.open(snackbar)
+            print("Error:", str(e))
             return
         multiplatform.wifilock(True)
         bus_view.appbar = ft.AppBar(
@@ -138,6 +138,7 @@ def main(page: ft.Page):
         )
         on_stop = []
         another_bus_info = bus_info.copy()
+
         def on_position_change(e):
             if not e:
                 return
@@ -146,7 +147,12 @@ def main(page: ft.Page):
             for p in another_bus_info.values():
                 nearest = (0, 99999999999)
                 for s in p["stops"]:
-                    dis = config.measure(float(s["lat"]), float(s["lon"]), float(e.latitude), float(e.longitude))
+                    dis = config.measure(
+                        float(s["lat"]),
+                        float(s["lon"]),
+                        float(e.latitude),
+                        float(e.longitude)
+                    )
                     if nearest[1] > dis:
                         nearest = (s["stop_id"], dis)
                 on_stop.append(nearest[0])
@@ -156,7 +162,7 @@ def main(page: ft.Page):
         timetexts = {}
         tabs = []
         paths = {}
-        stops = {} # for stop menu
+        stops = {}  # for stop menu
         for path_id, path_data in bus_info.items():
             timetexts[path_id] = []
             for stop in path_data["stops"]:
@@ -170,7 +176,10 @@ def main(page: ft.Page):
                                     width=50,
                                     height=50,
                                     alignment=ft.alignment.center,
-                                    bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY),
+                                    bgcolor=ft.Colors.with_opacity(
+                                        0.2,
+                                        ft.Colors.PRIMARY
+                                    ),
                                     border_radius=30,
                                 ),
                                 ft.Text(stop["stop_name"]),
@@ -182,7 +191,12 @@ def main(page: ft.Page):
                             ]
                         ),
                         key=str(stop["stop_id"]),
-                        on_click=lambda e: stop_on_click(config.current_bus["routekey"], str(stops[e.control.key]["path_id"]), str(stops[e.control.key]["stop_id"]), stops[e.control.key]["stop_name"]),
+                        on_click=lambda e: stop_on_click(
+                            config.current_bus["routekey"],
+                            str(stops[e.control.key]["path_id"]),
+                            str(stops[e.control.key]["stop_id"]),
+                            stops[e.control.key]["stop_name"]
+                        ),
                      )
                  )
             paths[path_id] = ft.Column(
@@ -213,7 +227,11 @@ def main(page: ft.Page):
             paths[selindex].scroll_to(key=str(selstop), duration=500)
         while page.route == current_route:
             try:
-                bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus["routekey"]))
+                bus_info = asyncio.run(
+                    taiwanbus.get_complete_bus_info(
+                        config.current_bus["routekey"]
+                    )
+                )
             except Exception as e:
                 print("Error:", str(e))
                 bus_timer_pb.color = ft.Colors.RED_800
@@ -225,7 +243,11 @@ def main(page: ft.Page):
                     if not page.route == current_route:
                         break
                     try:
-                        bus_info = asyncio.run(taiwanbus.get_complete_bus_info(config.current_bus["routekey"]))
+                        bus_info = asyncio.run(
+                            taiwanbus.get_complete_bus_info(
+                                config.current_bus["routekey"]
+                            )
+                        )
                     except Exception as e:
                         print("Error:", str(e))
                         tried += 1
@@ -254,8 +276,16 @@ def main(page: ft.Page):
                             icon = ft.Icons.GPS_FIXED
                             bgcolor = ft.Colors.CYAN_400
                         else:
-                            icon = ft.Icons.ACCESSIBLE if bus_info[path_id]["stops"][i]["bus"][0]["type"] == "1" else ft.Icons.DIRECTIONS_BUS
-                            bgcolor= ft.Colors.YELLOW_800 if bus_info[path_id]["stops"][i]["bus"][0]["id"].startswith("E") else (ft.Colors.PRIMARY)
+                            icon = (
+                                ft.Icons.ACCESSIBLE
+                                if
+                                bus_info[path_id]["stops"][i]["bus"][0][
+                                    "type"
+                                ] == "1"
+                                else
+                                ft.Icons.DIRECTIONS_BUS
+                            )
+                            bgcolor = ft.Colors.YELLOW_800 if bus_info[path_id]["stops"][i]["bus"][0]["id"].startswith("E") else (ft.Colors.PRIMARY)
                         
                         path.content.controls.append(
                             ft.FilledButton(
@@ -307,7 +337,10 @@ def main(page: ft.Page):
                 title=ft.Text("確定刪除？"),
                 content=ft.Text(f"您確定要刪除 {e.control.title.value} ？"),
                 actions=[
-                    ft.TextButton("算了", on_click=lambda e: page.close(deletedialog)),
+                    ft.TextButton(
+                        "算了",
+                        on_click=lambda e: page.close(deletedialog)
+                    ),
                     ft.TextButton("好啊", on_click=on_group_delete_clicked),
                 ],
             )
@@ -315,6 +348,7 @@ def main(page: ft.Page):
 
     def favorite_add(e):
         tf = ft.TextField(label="群組名稱")
+        
         def on_group_add_clicked(ee):
             page.close(adddialog)
             config.favorite_stop(favorite_name=tf.value, mode="s", data=[])
@@ -325,7 +359,10 @@ def main(page: ft.Page):
                 title=ft.Text("新增群組"),
                 content=tf,
                 actions=[
-                    ft.TextButton("取消", on_click=lambda e: page.close(adddialog)),
+                    ft.TextButton(
+                        "取消",
+                        on_click=lambda e: page.close(adddialog)
+                    ),
                     ft.TextButton("新增", on_click=on_group_add_clicked),
                 ],
             )
@@ -348,12 +385,22 @@ def main(page: ft.Page):
                 page.go("/")
                 return
             for route in routes:
-                suggestions.append(ft.AutoCompleteSuggestion(key=f"{route['provider']}-{route['route_name']}/{route['route_key']}", value=f"{route['provider']}-{route['route_name']}/{route['route_key']}"),)
+                suggestions.append(
+                    ft.AutoCompleteSuggestion(
+                        key=f"{route['provider']}-{route['route_name']}/ \
+                            {route['route_key']}",
+                        value=f"{route['provider']}-{route['route_name']}/ \
+                            {route['route_key']}"
+                        ),
+                    )
             page.views.append(
                 ft.View(
                     "/search",
                     [
-                        ft.AppBar(title=ft.Text("查詢公車"), bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST),
+                        ft.AppBar(
+                            title=ft.Text("查詢公車"),
+                            bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST
+                        ),
                         ft.AutoComplete(
                             suggestions=suggestions,
                             on_select=search_select,
@@ -969,7 +1016,6 @@ def main(page: ft.Page):
                 page.close(e.control.content)
             except Exception as eee:
                 print("Error closing control content:", str(eee))
-                pass
         updating_dialog = ft.AlertDialog(
             modal=True,
             title=ft.Text("正在更新"),
@@ -1134,7 +1180,7 @@ def main(page: ft.Page):
                 )
                 page.open(error_snackbar)
                 page.update()
-    
+
     def open_app_update_dialog(updates, data):
         def app_update(e):
             page.open(ft.SnackBar(
