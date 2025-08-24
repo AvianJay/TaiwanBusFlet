@@ -24,6 +24,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-android-${{ hashFiles('pyproject.toml') }}
+
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
@@ -67,6 +73,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-ios-${{ hashFiles('pyproject.toml') }}
 
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
@@ -126,6 +138,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-macos-${{ hashFiles('pyproject.toml') }}
+
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
@@ -161,6 +179,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-windows-${{ hashFiles('pyproject.toml') }}
+
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
         with:
@@ -195,6 +219,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-linux-${{ hashFiles('pyproject.toml') }}
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
@@ -235,6 +265,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-web-${{ hashFiles('pyproject.toml') }}
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v2

@@ -14,6 +14,15 @@ on:
         required: false
         default: ''
 
+env:
+  PYTHONUTF8: 1
+  FLET_CLI_NO_RICH_OUTPUT: 1
+  UV_NO_PROGRESS: 1
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
@@ -21,13 +30,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-android-${{ hashFiles('pyproject.toml') }}
+
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Replace version and update channel in config.py
         run: |
           sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
-          sed -i 's/update_channel = ".*"/update_channel = "release"/' src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
@@ -64,6 +79,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-ios-${{ hashFiles('pyproject.toml') }}
 
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
@@ -71,7 +92,7 @@ jobs:
       - name: Replace version and update channel in config.py
         run: |
           sed -i '' 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
-          sed -i '' 's/update_channel = ".*"/update_channel = "release"/' src/config.py
+          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
@@ -83,6 +104,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
+
+      - name: Install iOS runtime
+        run: |
+          for i in 1 2 3; do
+            if sudo xcodebuild -downloadPlatform iOS; then
+              break
+            else
+              echo "Retry $i..."
+              sleep 30
+            fi
+          done
 
       - name: Build IPA
         run: |
@@ -112,13 +144,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-macos-${{ hashFiles('pyproject.toml') }}
+
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Replace version and update channel in config.py
         run: |
           sed -i '' 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
-          sed -i '' 's/update_channel = ".*"/update_channel = "release"/' src/config.py
+          sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
@@ -147,6 +185,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-windows-${{ hashFiles('pyproject.toml') }}
+
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
         with:
@@ -158,7 +202,7 @@ jobs:
       - name: Replace version and update channel in config.py
         run: |
           sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
-          sed -i 's/update_channel = ".*"/update_channel = "release"/' src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Install dependencies
         run: |
@@ -182,6 +226,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-linux-${{ hashFiles('pyproject.toml') }}
+
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
         with:
@@ -193,7 +243,7 @@ jobs:
       - name: Replace version and update channel in config.py
         run: |
           sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
-          sed -i 's/update_channel = ".*"/update_channel = "release"/' src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
       
       - name: Patch for linux build
         run: |
@@ -222,6 +272,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-web-${{ hashFiles('pyproject.toml') }}
+
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
         with:
@@ -233,7 +289,7 @@ jobs:
       - name: Replace version and update channel in config.py
         run: |
           sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
-          sed -i 's/update_channel = ".*"/update_channel = "release"/' src/config.py
+          sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
 
       - name: Install dependencies
         run: |
