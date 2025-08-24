@@ -1100,7 +1100,7 @@ def main(page: ft.Page):
         if should_update == "check_popup":
             open_update_dialog()
         elif should_update == "check_notify":
-            updates = taiwanbus.check_database_update()
+            updates = api.check_database_update()
             if any(updates.values()):
                 update_message = f"資料庫有新版本 {list(updates.values())[0]}"
                 updated_snackbar = ft.SnackBar(
