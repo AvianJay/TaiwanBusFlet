@@ -725,7 +725,7 @@ def main(page: ft.Page):
                             ),
                             # app info
                             ft.Text("版本資訊"),
-                            ft.Text(f"App: {config.app_version}\n"
+                            ft.Text(f"App: {config.full_version}\n"
                                     f"Config: {config.config_version}\n"
                                     f"TaiwanBus: {config.taiwanbus_version}\n"
                                     f"Update channel: {config.update_channel}"
