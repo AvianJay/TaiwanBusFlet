@@ -367,6 +367,31 @@ def main(page: ft.Page):
                 ],
             )
         page.open(adddialog)
+    
+    def upload_log(e):
+        if config.update_channel == "developer":
+            page.open(
+                ft.SnackBar(
+                    content=ft.Text("developer模式無法上傳。"),
+                )
+            )
+            return
+        try:
+            url = config.upload_log()
+        except Exception as e:
+            page.open(
+                ft.SnackBar(
+                    content=ft.Text(f"上傳錯誤: {str(e)}"),
+                )
+            )
+        page.set_clipboard(url)
+        page.open(
+            ft.SnackBar(
+                content=ft.Text("連結已複製到剪貼簿。"),
+                action="開啟網頁",
+                on_action=lambda e: page.launch_url(url),
+            )
+        )
 
     def route_change(route):
         multiplatform.wifilock(False)
@@ -740,6 +765,12 @@ def main(page: ft.Page):
                                     f"Network Status: {multiplatform.get_network_status().value}\n"
                                     # f"Last location: {location}"
                                     ),
+                            # upload log
+                            ft.ElevatedButton(
+                                "上傳應用程式日誌",
+                                ft.Icons.BUG_REPORT,
+                                on_click=upload_log,
+                            )
                         ]),
                     ],
                     scroll=ft.ScrollMode.AUTO,
@@ -905,7 +936,7 @@ def main(page: ft.Page):
                 )
             )
         page.update()
-    
+
     # home page
     def home_show_page(index):
         home_view.controls.clear()  # 清空頁面內容
@@ -942,7 +973,7 @@ def main(page: ft.Page):
                                 ft.Column(
                                     [
                                         ft.Text(value="我的最愛", size=20),
-                                        ft.Text(value="最愛的就是你"), # 好啦之後會改啦
+                                        ft.Text(value="最愛的就是你"),  # 好啦之後會改啦
                                     ],
                                     alignment=ft.MainAxisAlignment.CENTER,
                                     spacing=5,

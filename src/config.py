@@ -202,7 +202,7 @@ position_change_events = []
 
 
 def handle_position_change(e):
-    print("Position changed:", e)
+    # print("Position changed:", e)
     for event in position_change_events:
         try:
             event(e)
@@ -338,3 +338,18 @@ def measure(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     d = R * c
     return d * 1000  # meters
+
+
+def upload_log() -> str:
+    log_path = os.environ.get("FLET_APP_CONSOLE")
+    if not log_path or not os.path.isfile(log_path):
+        raise FileNotFoundError(f"找不到檔案: {log_path}")
+
+    with open(log_path, "rb") as f:
+        files = {"file": f}
+        r = requests.post("https://0x0.st", files=files)
+
+    if r.status_code == 200:
+        return r.text.strip()  # 回傳短網址
+    else:
+        raise Exception(f"上傳失敗: {r.status_code} {r.text}")
