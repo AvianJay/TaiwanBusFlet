@@ -1,6 +1,6 @@
 import flet as ft
 import taiwanbus
-from taiwanbus import api
+import taiwanbus.api as api
 import taiwanbus.exceptions as tbe
 import asyncio
 import config
