@@ -343,9 +343,15 @@ def upload_log() -> str:
 
     with open(log_path, "rb") as f:
         files = {"file": f}
-        r = requests.post("https://0x0.st", files=files)
+        r = requests.post(
+            "https://0x0.st",
+            files=files,
+            headers={
+                "User-Agent": f"TaiwanBusFlet/{full_version}"
+            }
+        )
 
     if r.status_code == 200:
         return r.text.strip()  # 回傳短網址
     else:
-        raise Exception(f"上傳失敗: {r.status_code} {r.text}")
+        raise Exception(f"{r.status_code} {r.text}")
