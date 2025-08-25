@@ -304,20 +304,17 @@ def check_update():
             headers=headers,
             timeout=5
         )
-        content_types = {
-            "android": "application/vnd.android.package-archive",
-        }
         r.raise_for_status()
         releases = r.json()
         if releases:
             latest_version = releases[0]["tag_name"]
-            # get apk
+            # get file
             for asset in releases[0]["assets"]:
-                if asset["content_type"] == content_types.get(platform):
-                    apk_url = asset["browser_download_url"]
+                if platform in asset["name"]:
+                    file_url = asset["browser_download_url"]
             if latest_version != app_version:
                 return releases[0]["body"] + \
-                    f"\n[original]({releases[0]['html_url']})", apk_url
+                    f"\n[original]({releases[0]['html_url']})", file_url
     return False, None
 
 
