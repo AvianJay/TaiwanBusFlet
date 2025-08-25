@@ -27,7 +27,7 @@ jobs:
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Replace version and update channel in config.py
+      - name: Replace hash and update channel in config.py
         run: |
           sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
@@ -71,7 +71,7 @@ jobs:
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Replace version and update channel in config.py
+      - name: Replace hash and update channel in config.py
         run: |
           sed -i '' 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
@@ -129,7 +129,7 @@ jobs:
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Replace version and update channel in config.py
+      - name: Replace hash and update channel in config.py
         run: |
           sed -i '' 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i '' 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
@@ -169,7 +169,7 @@ jobs:
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Replace version and update channel in config.py
+      - name: Replace hash and update channel in config.py
         run: |
           sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
@@ -204,7 +204,7 @@ jobs:
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Replace version and update channel in config.py
+      - name: Replace hash and update channel in config.py
         run: |
           sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
@@ -244,7 +244,7 @@ jobs:
       - name: Get short Git commit hash
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Replace version and update channel in config.py
+      - name: Replace hash and update channel in config.py
         run: |
           sed -i 's/hash = ".*"/hash = "'$COMMIT_HASH'"/' src/config.py
           sed -i 's/update_channel = ".*"/update_channel = "nightly"/' src/config.py
