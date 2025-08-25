@@ -315,22 +315,27 @@ jobs:
         if: needs.build-windows.result == 'success'
         run: |
           cd release_files/taiwanbusflet-windows
-          zip -r ../taiwanbusflet-windows.zip *
+          zip -r ../TaiwanBusFlet-windows.zip *
           cd ../..
 
       - name: Zip for macOS
         if: needs.build-macos.result == 'success'
         run: |
           cd release_files/taiwanbusflet-macos
-          zip -r ../taiwanbusflet-macos.zip *
+          zip -r ../TaiwanBusFlet-macos.zip *
           cd ../..
     
       - name: Zip for Linux
         if: needs.build-linux.result == 'success'
         run: |
           cd release_files/taiwanbusflet-linux
-          zip -r ../taiwanbusflet-linux.zip *
+          zip -r ../TaiwanBusFlet-linux.zip *
           cd ../..
+
+      - name: Rename some files
+        run: |
+          mv release_files/**/*.apk release_files/TaiwanBusFlet-android.apk
+          mv release_files/**/*.ipa release_files/TaiwanBusFlet-ios.ipa
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v1
@@ -340,8 +345,8 @@ jobs:
           body: ${{ github.event.inputs.release_body }}
           draft: true
           files: |
-            release_files/**/*.apk
-            release_files/**/*.ipa
-            release_files/**/*.zip
+            release_files/*.apk
+            release_files/*.ipa
+            release_files/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
