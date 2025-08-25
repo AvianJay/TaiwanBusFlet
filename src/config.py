@@ -347,7 +347,7 @@ def upload_log() -> str:
             "https://0x0.st",
             files=files,
             headers={
-                "User-Agent": f"TaiwanBusFlet/{full_version}"
+                "User-Agent": f"TaiwanBusFlet/{app_version}"
             }
         )
 
