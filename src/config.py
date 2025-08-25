@@ -286,8 +286,8 @@ def check_update():
             if res.get("workflow_runs")[0].get("status") == "completed":
                 return (
                     f"### New commit: {hash}\n\n"
-                    f"**Full Changelog**: [{app_version}...{hash}] "
-                    "(https://github.com/AvianJay/TaiwanBusFlet/compare/",
+                    f"**Full Changelog**: [{app_version}...{hash}]"
+                    "(https://github.com/AvianJay/TaiwanBusFlet/compare/"
                     f"{app_version}...{hash})",
                     "https://nightly.link/AvianJay/TaiwanBusFlet/",
                     f"workflows/build/main/taiwanbusflet-{platform}.zip"
