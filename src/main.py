@@ -139,13 +139,14 @@ def main(page: ft.Page):
         )
         on_stop = []
         another_bus_info = bus_info.copy()
+        fs = True
 
         def on_position_change(e):
             if not e:
                 return
-            nonlocal on_stop
+            nonlocal on_stop, fs
             on_stop = []
-            for p in another_bus_info.values():
+            for i, p in another_bus_info.items():
                 nearest = (0, 99999999999)
                 for s in p["stops"]:
                     dis = config.measure(
@@ -157,6 +158,9 @@ def main(page: ft.Page):
                     if nearest[1] > dis:
                         nearest = (s["stop_id"], dis)
                 on_stop.append(nearest[0])
+                if fs and i == pathtabs.selected_index:
+                    scrollToStop(pathtabs.selected_index, nearest[0])
+                    fs = False
         config.position_change_events.append(on_position_change)
         # on_position_change(config.get_location())
         config.get_location()
@@ -223,20 +227,24 @@ def main(page: ft.Page):
                 )
         bus_view.controls.append(pathtabs)
         current_route = page.route
+        def scrollToStop(pathid, stopid):
+            try:
+                tomid = page.height // 2 // 75
+                last = None
+                for index, stop in enumerate(bus_info[pathid]["stops"]):
+                    if stop["stop_id"] == int(stopid):
+                        last = int(index - tomid)
+                        break
+                if last < 0:
+                    last = 0
+                lastid = bus_info[pathid]["stops"][last]["stop_id"]
+                paths[pathid].scroll_to(key=str(lastid), duration=500)
+                paths[pathid].controls[last].focus()
+            except Exception as e:
+                print("Failed to scroll:", str(e))
         if selstop:
             page.update()
-            # middle
-            tomid = page.height // 2 // 75
-            last = None
-            for index, stop in enumerate(bus_info[selindex]["stops"]):
-                if stop["stop_id"] == int(selstop):
-                    last = int(index - tomid)
-                    break
-            if last < 0:
-                last = 0
-            lastid = bus_info[selindex]["stops"][last]["stop_id"]
-            paths[selindex].scroll_to(key=str(lastid), duration=500)
-            paths[selindex].controls[last].focus()
+            scrollToStop(selindex, selstop)
         while page.route == current_route:
             try:
                 bus_info = api.get_complete_bus_info(
