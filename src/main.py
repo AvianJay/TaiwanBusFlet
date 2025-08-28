@@ -225,7 +225,18 @@ def main(page: ft.Page):
         current_route = page.route
         if selstop:
             page.update()
-            paths[selindex].scroll_to(key=str(selstop), duration=500)
+            # middle
+            tomid = page.height // 2 // 75
+            last = None
+            for index, stop in enumerate(bus_info[selindex]["stops"]):
+                if stop["stop_id"] == int(selstop):
+                    last = int(index - tomid)
+                    break
+            if last < 0:
+                last = 0
+            lastid = bus_info[selindex]["stops"][last]["stop_id"]
+            paths[selindex].scroll_to(key=str(lastid), duration=500)
+            paths[selindex].controls[last].focus()
         while page.route == current_route:
             try:
                 bus_info = api.get_complete_bus_info(
