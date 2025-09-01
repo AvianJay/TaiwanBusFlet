@@ -12,7 +12,7 @@ dependencies = [
   "taiwanbus==0.1.0",
   "flet-geolocator==0.2.0.dev504",
   "requests>2.26.0",
-  "flet-permission-handler==0.1.0",
+  "flet-permission-handler==0.2.0.dev504",
 ]
 
 [tool.flet]
