@@ -3,7 +3,7 @@ name = "taiwanbusflet"
 version = "0.1.0"
 description = "TaiwanBus GUI"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "AvianJay", email = "avianjay@avianjay.sbs" }
 ]
