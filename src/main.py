@@ -13,7 +13,7 @@ import multiplatform
 # Todo: 弄成多個檔案
 
 def main(page: ft.Page):
-    page.title = "TaiwanBus"
+    page.title = "YetAnotherBusApp"
     # page.adaptive = True
 
     # theme
@@ -25,7 +25,7 @@ def main(page: ft.Page):
 
     home_view = ft.View("/")
     home_view.appbar = ft.AppBar(
-        title=ft.Text("TaiwanBus"),
+        title=ft.Text("YABus"),
         bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
         actions=[
             ft.IconButton(ft.Icons.SETTINGS, on_click=lambda e: page.go("/settings")),
