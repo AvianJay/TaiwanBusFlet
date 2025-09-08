@@ -1,5 +1,5 @@
-# TaiwanBusFlet
-
+# Yet Another Taiwan Bus App
+又一個台灣公車App。
 ## 下載最新成功構建的檔案
 [Android](https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-android.zip)
 [iOS](https://nightly.link/AvianJay/TaiwanBusFlet/workflows/build/main/taiwanbusflet-ios.zip)

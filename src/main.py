@@ -301,7 +301,7 @@ def main(page: ft.Page):
                                 else
                                 ft.Icons.DIRECTIONS_BUS
                             )
-                            bgcolor = ft.Colors.YELLOW_800 if bus_info[path_id]["stops"][i]["bus"][0]["id"].startswith("E") else (ft.Colors.PRIMARY)
+                            bgcolor = ft.Colors.YELLOW_800 if bus_info[path_id]["stops"][i]["bus"][0]["id"].startswith("E") or bus_info[path_id]["stops"][i]["bus"][0]["id"].endswith("FV") else (ft.Colors.PRIMARY)
                         
                         path.content.controls.append(
                             ft.FilledButton(
