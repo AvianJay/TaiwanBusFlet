@@ -333,6 +333,13 @@ def measure(lat1, lon1, lat2, lon2):
     return d * 1000  # meters
 
 
+def angle_2p(x1, y1, x2, y2):
+    dx = x2 - x1
+    dy = y2 - y1
+    angle = (math.degrees(math.atan2(dy, dx)) + 360) % 360
+    return angle
+
+
 def upload_log() -> str:
     log_path = os.environ.get("FLET_APP_CONSOLE")
     if not log_path or not os.path.isfile(log_path):
