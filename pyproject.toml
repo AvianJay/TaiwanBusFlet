@@ -48,6 +48,10 @@ flet = {extras = ["all"], version = "0.28.2"}
 dependencies = [
   "pyjnius"
 ]
+min_sdk_version = 24
+
+[tool.flet.flutter.pubspec.dependency_overrides]
+webview_flutter_android = "4.10.1"
 
 [tool.flet.android.permission]
 "android.permission.ACCESS_NETWORK_STATE" = true
@@ -58,9 +62,3 @@ dependencies = [
 "android.permission.ACCESS_BACKGROUND_LOCATION" = true
 "android.permission.FOREGROUND_SERVICE" = true
 "android.permission.FOREGROUND_SERVICE_LOCATION" = true
-
-[tool.flet.android]
-min_sdk_version = 24
-
-[tool.flet.flutter.pubspec.dependency_overrides]
-webview_flutter_android = "4.10.1"
