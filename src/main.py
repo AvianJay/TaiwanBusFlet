@@ -188,7 +188,7 @@ def main(page: ft.Page):
                                     content=ft.Text(stop["sec"]),
                                     width=50,
                                     height=50,
-                                    alignment=ft.Alignment.center,
+                                    alignment=ft.Alignment.CENTER,
                                     bgcolor=ft.Colors.with_opacity(
                                         0.2,
                                         ft.Colors.PRIMARY
@@ -316,7 +316,7 @@ def main(page: ft.Page):
                                 bus_info[path_id]["stops"][i]["bus"][0]["id"],
                                 icon=icon,
                                 style=ft.ButtonStyle(
-                                    alignment=ft.Alignment.center_right
+                                    alignment=ft.Alignment.CENTER_RIGHT
                                 ),
                                 on_click=lambda e: page.launch_url(f"https://twbusforum.fandom.com/zh-tw/wiki/%E7%89%B9%E6%AE%8A:%E6%90%9C%E5%B0%8B?scope=internal&navigationSearch=true&query={e.control.text}"),
                                 bgcolor=bgcolor,
@@ -328,7 +328,7 @@ def main(page: ft.Page):
                                 "你的位置",
                                 icon=ft.Icons.GPS_FIXED,
                                 style=ft.ButtonStyle(
-                                    alignment=ft.Alignment.center_right
+                                    alignment=ft.Alignment.CENTER_RIGHT
                                 ),
                                 bgcolor=ft.Colors.GREEN_400,
                             )
@@ -521,7 +521,7 @@ def main(page: ft.Page):
                                                     content=ft.Text(route_info["route_name"]),
                                                     width=50,
                                                     height=50,
-                                                    alignment=ft.Alignment.center,
+                                                    alignment=ft.Alignment.CENTER,
                                                     bgcolor=ft.Colors.GREY_200,
                                                     border_radius=30,
                                                 ),
@@ -563,7 +563,7 @@ def main(page: ft.Page):
                         text_align=ft.TextAlign.CENTER,
                         size=30
                     ),
-                    alignment=ft.Alignment.center,
+                    alignment=ft.Alignment.CENTER,
                 )
             page.views.append(
                 ft.View(
@@ -984,7 +984,7 @@ def main(page: ft.Page):
                             ]),
                         padding=10,
                         on_click=lambda e: page.go("/search"),
-                        alignment=ft.Alignment.center,
+                        alignment=ft.Alignment.CENTER,
                     ),
                     style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),
                 ),
@@ -1005,7 +1005,7 @@ def main(page: ft.Page):
                             ]),
                         padding=10,
                         on_click=lambda e: page.go("/favorites"),
-                        alignment=ft.Alignment.center,
+                        alignment=ft.Alignment.CENTER,
                     ),
                     style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),
                 ),
@@ -1019,7 +1019,7 @@ def main(page: ft.Page):
                             text_align=ft.TextAlign.CENTER,
                             size=30
                         ),
-                    alignment=ft.Alignment.center,
+                    alignment=ft.Alignment.CENTER,
                 )
             )
         page.update()
