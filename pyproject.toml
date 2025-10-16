@@ -8,7 +8,7 @@ authors = [
     { name = "AvianJay", email = "avianjay@avianjay.sbs" }
 ]
 dependencies = [
-  "flet==0.28.2",
+  "flet==0.28.1",
   "taiwanbus==0.1.0",
   "flet-geolocator==0.1.0",
   "requests>2.26.0",
@@ -35,14 +35,14 @@ path = "src"
 
 [tool.uv]
 dev-dependencies = [
-    "flet[all]==0.28.2",
+    "flet[all]==0.28.1",
 ]
 
 [tool.poetry]
 package-mode = false
 
 [tool.poetry.group.dev.dependencies]
-flet = {extras = ["all"], version = "0.28.2"}
+flet = {extras = ["all"], version = "0.28.1"}
 
 [tool.flet.android]
 dependencies = [
