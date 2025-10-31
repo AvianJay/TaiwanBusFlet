@@ -133,19 +133,18 @@ def main(page: ft.Page):
             print("Error:", str(e))
             return
         multiplatform.wifilock(True)
+        def get_direction(e):
+            page.open(ft.SnackBar(content=ft.Text("還沒做完！")))
         bus_view.appbar = ft.AppBar(
             title=ft.Text(route_info["route_name"]),
             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
-            action=[
+            actions=[
                 ft.IconButton(ft.Icons.EXPLORE_OUTLINED, on_click=get_direction),
             ],
         )
         on_stop = []
         another_bus_info = bus_info.copy()
         fs = True
-
-        def get_direction(e):
-            page.open(ft.SnackBar(content=ft.Text("還沒做完！")))
 
         def on_position_change(e):
             if not e:
@@ -188,7 +187,7 @@ def main(page: ft.Page):
                                     content=ft.Text(stop["sec"]),
                                     width=50,
                                     height=50,
-                                    alignment=ft.alignment.center,
+                                    alignment=ft.Alignment(0, 0),
                                     bgcolor=ft.Colors.with_opacity(
                                         0.2,
                                         ft.Colors.PRIMARY
@@ -316,7 +315,7 @@ def main(page: ft.Page):
                                 bus_info[path_id]["stops"][i]["bus"][0]["id"],
                                 icon=icon,
                                 style=ft.ButtonStyle(
-                                    alignment=ft.alignment.center_right
+                                    alignment=ft.Alignment(1, 0)
                                 ),
                                 on_click=lambda e: page.launch_url(f"https://twbusforum.fandom.com/zh-tw/wiki/%E7%89%B9%E6%AE%8A:%E6%90%9C%E5%B0%8B?scope=internal&navigationSearch=true&query={e.control.text}"),
                                 bgcolor=bgcolor,
@@ -328,7 +327,7 @@ def main(page: ft.Page):
                                 "你的位置",
                                 icon=ft.Icons.GPS_FIXED,
                                 style=ft.ButtonStyle(
-                                    alignment=ft.alignment.center_right
+                                    alignment=ft.Alignment(1, 0)
                                 ),
                                 bgcolor=ft.Colors.GREEN_400,
                             )
@@ -521,7 +520,7 @@ def main(page: ft.Page):
                                                     content=ft.Text(route_info["route_name"]),
                                                     width=50,
                                                     height=50,
-                                                    alignment=ft.alignment.center,
+                                                    alignment=ft.Alignment(0, 0),
                                                     bgcolor=ft.Colors.GREY_200,
                                                     border_radius=30,
                                                 ),
@@ -563,7 +562,7 @@ def main(page: ft.Page):
                         text_align=ft.TextAlign.CENTER,
                         size=30
                     ),
-                    alignment=ft.alignment.center,
+                    alignment=ft.Alignment(0, 0),
                 )
             page.views.append(
                 ft.View(
@@ -984,7 +983,7 @@ def main(page: ft.Page):
                             ]),
                         padding=10,
                         on_click=lambda e: page.go("/search"),
-                        alignment=ft.alignment.center,
+                        alignment=ft.Alignment(0, 0),
                     ),
                     style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),
                 ),
@@ -1005,7 +1004,7 @@ def main(page: ft.Page):
                             ]),
                         padding=10,
                         on_click=lambda e: page.go("/favorites"),
-                        alignment=ft.alignment.center,
+                        alignment=ft.Alignment(0, 0),
                     ),
                     style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),
                 ),
@@ -1019,7 +1018,7 @@ def main(page: ft.Page):
                             text_align=ft.TextAlign.CENTER,
                             size=30
                         ),
-                    alignment=ft.alignment.center,
+                    alignment=ft.Alignment(0, 0),
                 )
             )
         page.update()
