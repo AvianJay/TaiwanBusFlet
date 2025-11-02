@@ -289,7 +289,7 @@ def check_update():
                     f"**Full Changelog**: [{app_version}...{hash}]"
                     "(https://github.com/AvianJay/TaiwanBusFlet/compare/"
                     f"{app_version}...{hash})",
-                    "https://nightly.link/AvianJay/TaiwanBusFlet/",
+                    "https://nightly.link/AvianJay/TaiwanBusFlet/"
                     f"workflows/build/main/taiwanbusflet-{platform}.zip"
                 )
         return False, None
