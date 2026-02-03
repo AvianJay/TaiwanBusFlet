@@ -8,6 +8,7 @@ import time
 import threading
 import flet_geolocator as fg
 import multiplatform
+import components as ui
 
 
 # Todo: 弄成多個檔案
@@ -133,13 +134,43 @@ def main(page: ft.Page):
             print("Error:", str(e))
             return
         multiplatform.wifilock(True)
+        
         def get_direction(e):
             page.open(ft.SnackBar(content=ft.Text("還沒做完！")))
+        
+        def share_route(e):
+            """分享路線資訊"""  # wtf is this taiwanbus://viewbus/ scheme
+            share_text = f"🚌 {route_info['route_name']}\n"
+            share_text += f"查看即時公車資訊：taiwanbus://viewbus/{config.current_bus['routekey']}"
+            page.set_clipboard(share_text)
+            page.open(ft.SnackBar(
+                content=ft.Text("已複製到剪貼簿，可以分享給朋友了！"),
+                action="確定",
+            ))
+        
+        def show_route_info(e):
+            """顯示路線詳細資訊"""
+            info_dialog = ft.AlertDialog(
+                title=ft.Text(f"🚌 {route_info['route_name']}"),
+                content=ft.Column([
+                    ft.Text(f"路線代碼: {route_info.get('route_key', 'N/A')}"),
+                    ft.Text(f"營運業者: {route_info.get('provider', 'N/A')}"),
+                    # ft.Text(f"起站: {route_info.get('departure', 'N/A')}"),
+                    # ft.Text(f"迄站: {route_info.get('destination', 'N/A')}"),
+                ], tight=True),
+                actions=[
+                    ft.TextButton("關閉", on_click=lambda e: page.close(info_dialog)),
+                ],
+            )
+            page.open(info_dialog)
+        
         bus_view.appbar = ft.AppBar(
             title=ft.Text(route_info["route_name"]),
             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
             actions=[
-                ft.IconButton(ft.Icons.EXPLORE_OUTLINED, on_click=get_direction),
+                ft.IconButton(ft.Icons.INFO_OUTLINE, on_click=show_route_info, tooltip="路線資訊"),
+                ft.IconButton(ft.Icons.SHARE, on_click=share_route, tooltip="分享"),
+                ft.IconButton(ft.Icons.EXPLORE_OUTLINED, on_click=get_direction, tooltip="導航"),
             ],
         )
         on_stop = []
@@ -348,6 +379,13 @@ def main(page: ft.Page):
 
     def search_select(e):
         selected = e.selection.value.split("/")[1]
+        # 儲存到歷史紀錄
+        try:
+            route_name = e.selection.value.split("/")[0]
+            provider = route_name.split("-")[0] if "-" in route_name else ""
+            config.add_history(selected, route_name, provider)
+        except Exception as ex:
+            print("Failed to add history:", ex)
         print("Selected bus:", selected)
         page.go(f"/viewbus/{selected}")
 
@@ -441,6 +479,37 @@ def main(page: ft.Page):
                             f"{route['route_key']}"
                         ),
                     )
+            
+            # 歷史紀錄列表
+            history = config.read_history()
+            history_items = []
+            if history:
+                for h in history:
+                    history_items.append(
+                        ft.ListTile(
+                            leading=ft.Icon(ft.Icons.HISTORY),
+                            title=ft.Text(h.get("route_name", h.get("routekey", ""))),
+                            on_click=lambda e, rk=h["routekey"]: page.go(f"/viewbus/{rk}"),
+                        )
+                    )
+                history_section = ft.Column([
+                    ft.Row([
+                        ft.Text("最近查詢", size=16, weight=ft.FontWeight.BOLD),
+                        ft.TextButton(
+                            "清除",
+                            on_click=lambda e: clear_and_refresh_history(),
+                        ),
+                    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                    *history_items,
+                    ft.Divider(),
+                ])
+            else:
+                history_section = ft.Container()
+            
+            def clear_and_refresh_history():
+                config.clear_history()
+                page.go("/search")  # 重新載入頁面
+            
             page.views.append(
                 ft.View(
                     "/search",
@@ -453,9 +522,145 @@ def main(page: ft.Page):
                             suggestions=suggestions,
                             on_select=search_select,
                         ),
+                        history_section,
                     ],
                 )
             )
+        if page.route == "/nearby":
+            # 附近站點功能
+            nearby_content = ft.Column([
+                ft.ProgressRing(),
+                ft.Text("正在取得位置..."),
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+            
+            page.views.append(
+                ft.View(
+                    "/nearby",
+                    [
+                        ft.AppBar(
+                            title=ft.Text("附近站點"),
+                            bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+                        ),
+                        ft.Container(
+                            content=nearby_content,
+                            alignment=ft.Alignment(0, 0),
+                            expand=True,
+                        ),
+                    ],
+                )
+            )
+            
+            def load_nearby_stops():
+                try:
+                    location = config.get_location(force=True)
+                    if not location:
+                        nearby_content.controls = [
+                            ft.Icon(ft.Icons.LOCATION_OFF, size=50),
+                            ft.Text("無法取得位置"),
+                            ft.Text("請確認已開啟定位權限", size=12, color=ft.Colors.GREY_500),
+                            ft.ElevatedButton("重試", on_click=lambda e: load_nearby_stops()),
+                        ]
+                        page.update()
+                        return
+                    
+                    # 取得所有路線資料
+                    try:
+                        routes = api.fetch_routes_by_name("")
+                    except tbe.DatabaseNotFoundError:
+                        nearby_content.controls = [
+                            ft.Icon(ft.Icons.ERROR, size=50),
+                            ft.Text("找不到資料庫"),
+                            ft.Text("請先更新資料庫", size=12, color=ft.Colors.GREY_500),
+                        ]
+                        page.update()
+                        return
+                    
+                    # 搜尋附近站點
+                    nearby_stops = []
+                    checked_routes = set()
+                    
+                    for route in routes[:50]:  # 限制搜尋數量以提升效能
+                        if route['route_key'] in checked_routes:
+                            continue
+                        checked_routes.add(route['route_key'])
+                        
+                        try:
+                            stops = api.fetch_stops_by_route(route['route_key'])
+                            for stop in stops:
+                                distance = config.measure(
+                                    float(stop.get('lat', 0)),
+                                    float(stop.get('lon', 0)),
+                                    float(location.latitude),
+                                    float(location.longitude)
+                                )
+                                if distance < 500:  # 500公尺內
+                                    nearby_stops.append({
+                                        'stop': stop,
+                                        'route': route,
+                                        'distance': distance
+                                    })
+                        except Exception as ex:
+                            print(f"Error fetching stops for {route['route_key']}: {ex}")
+                            continue
+                    
+                    # 依距離排序
+                    nearby_stops.sort(key=lambda x: x['distance'])
+                    
+                    if not nearby_stops:
+                        nearby_content.controls = [
+                            ft.Icon(ft.Icons.LOCATION_SEARCHING, size=50),
+                            ft.Text("附近沒有找到站點"),
+                            ft.Text("試著移動到公車站附近", size=12, color=ft.Colors.GREY_500),
+                        ]
+                    else:
+                        stop_items = []
+                        seen_stops = set()
+                        for item in nearby_stops[:20]:  # 顯示前20個
+                            stop_key = f"{item['stop']['stop_name']}-{item['route']['route_name']}"
+                            if stop_key in seen_stops:
+                                continue
+                            seen_stops.add(stop_key)
+                            
+                            distance_text = f"{int(item['distance'])}m" if item['distance'] < 1000 else f"{item['distance']/1000:.1f}km"
+                            stop_items.append(
+                                ft.ListTile(
+                                    leading=ft.Container(
+                                        content=ft.Text(distance_text, size=12),
+                                        width=50,
+                                        height=50,
+                                        alignment=ft.Alignment(0, 0),
+                                        bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY),
+                                        border_radius=25,
+                                    ),
+                                    title=ft.Text(item['stop']['stop_name']),
+                                    subtitle=ft.Text(f"{item['route']['route_name']}"),
+                                    on_click=lambda e, rk=item['route']['route_key']: page.go(f"/viewbus/{rk}"),
+                                )
+                            )
+                        
+                        nearby_content.controls = [
+                            ft.Text(f"找到 {len(seen_stops)} 個附近站點", weight=ft.FontWeight.BOLD),
+                            ft.ListView(
+                                stop_items,
+                                expand=True,
+                                spacing=5,
+                            ),
+                        ]
+                    
+                    page.update()
+                    
+                except Exception as ex:
+                    print(f"Error loading nearby stops: {ex}")
+                    nearby_content.controls = [
+                        ft.Icon(ft.Icons.ERROR, size=50),
+                        ft.Text("載入失敗"),
+                        ft.Text(str(ex), size=12, color=ft.Colors.GREY_500),
+                        ft.ElevatedButton("重試", on_click=lambda e: load_nearby_stops()),
+                    ]
+                    page.update()
+            
+            threading.Thread(target=load_nearby_stops, daemon=True).start()
+        
         if page.route.startswith("/viewbus"):
             _split = page.route.split("/")
             routekey = _split[2]
@@ -722,6 +927,26 @@ def main(page: ft.Page):
                                 on_change=lambda e: config.config("always_show_second", e.control.value, "w"),
                                 value=config.config("always_show_second"),
                             ),
+                            # max history
+                            ft.Text("歷史紀錄數量上限"),
+                            ft.Slider(
+                                min=0,
+                                max=30,
+                                label="{value} 筆",
+                                divisions=30,
+                                value=config.config("max_history") or 10,
+                                on_change=lambda e: config.config("max_history", int(e.control.value), "w"),
+                            ),
+                            # clear history button
+                            ft.ElevatedButton(
+                                "清除搜尋歷史",
+                                icon=ft.Icons.DELETE_OUTLINE,
+                                on_click=lambda e: (
+                                    config.clear_history(),
+                                    page.open(ft.SnackBar(content=ft.Text("歷史紀錄已清除")))
+                                ),
+                            ),
+                            ft.Divider(),
                             # bus update time
                             ft.Text("公車更新頻率"),
                             ft.Slider(
@@ -1004,6 +1229,28 @@ def main(page: ft.Page):
                             ]),
                         padding=10,
                         on_click=lambda e: page.go("/favorites"),
+                        alignment=ft.Alignment(0, 0),
+                    ),
+                    style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),
+                ),
+            )
+            # 附近站點按鈕
+            home_view.controls.append(
+                ft.TextButton(
+                    content=ft.Container(
+                        content=ft.Row([
+                                ft.Icon(name=ft.Icons.NEAR_ME),
+                                ft.Column(
+                                    [
+                                        ft.Text(value="附近站點", size=20),
+                                        ft.Text(value="探索周遭的公車站"),
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                    spacing=5,
+                                ),
+                            ]),
+                        padding=10,
+                        on_click=lambda e: page.go("/nearby"),
                         alignment=ft.Alignment(0, 0),
                     ),
                     style=ft.ButtonStyle(bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.PRIMARY), shape=ft.RoundedRectangleBorder(radius=15)),

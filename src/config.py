@@ -1,6 +1,7 @@
 import os
 import json
 import math
+import time
 import requests
 import taiwanbus
 from taiwanbus import api
@@ -41,6 +42,7 @@ default_config = {
     "firstrun": True,
     "theme": "system",
     "app_update_check": "popup",  # no, notify, popup
+    "max_history": 10,  # 最大歷史紀錄數量
 }
 config_path = os.path.join(datadir, "config.json")
 _config = None
@@ -193,6 +195,49 @@ def favorite_stop(favorite_name=None, mode="r", data=None):
 
 if not os.path.exists(os.path.join(datadir, "favorite.json")):
     json.dump({}, open(os.path.join(datadir, "favorite.json"), "w"))
+
+# 歷史紀錄功能
+history_path = os.path.join(datadir, "history.json")
+
+
+def read_history():
+    """讀取搜尋歷史紀錄"""
+    try:
+        if os.path.exists(history_path):
+            with open(history_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except (json.JSONDecodeError, IOError):
+        pass
+    return []
+
+
+def add_history(routekey: str, route_name: str, provider: str):
+    """新增歷史紀錄（自動去重並限制數量）"""
+    history = read_history()
+    # 移除重複項目
+    history = [h for h in history if h.get("routekey") != routekey]
+    # 新增到最前面
+    history.insert(0, {
+        "routekey": routekey,
+        "route_name": route_name,
+        "provider": provider,
+        "timestamp": time.time()
+    })
+    # 限制數量
+    max_history = config("max_history") or 10
+    history = history[:max_history]
+    # 儲存
+    with open(history_path, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False)
+    return True
+
+
+def clear_history():
+    """清除所有歷史紀錄"""
+    with open(history_path, "w", encoding="utf-8") as f:
+        json.dump([], f)
+    return True
+
 
 position_change_events = []
 
