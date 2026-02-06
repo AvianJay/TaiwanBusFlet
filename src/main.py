@@ -195,7 +195,7 @@ def main(page: ft.Page):
                         nearest = (s["stop_id"], dis)
                 on_stop.append(nearest[0])
                 if fs:
-                    bus_view.appbar.action.insert(0, ft.IconButton(ft.Icons.GPS_FIXED, on_click=lambda e: scrollToStop(pathtabs.selected_index, nearest[0])))
+                    bus_view.appbar.actions.insert(0, ft.IconButton(ft.Icons.GPS_FIXED, on_click=lambda e: scrollToStop(pathtabs.selected_index, nearest[0])))
                 if fs and i == pathtabs.selected_index:
                     scrollToStop(pathtabs.selected_index, nearest[0])
                     fs = False
@@ -273,6 +273,9 @@ def main(page: ft.Page):
                     if stop["stop_id"] == int(stopid):
                         last = int(index - tomid)
                         break
+                if last is None:
+                    # 找不到對應的站點
+                    return
                 if last < 0:
                     last = 0
                 lastid = bus_info[pathid]["stops"][last]["stop_id"]
